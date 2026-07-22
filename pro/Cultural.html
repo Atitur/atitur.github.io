@@ -223,7 +223,7 @@
         }
         #fab-paquetes:hover { transform: translateX(-50%) scale(1.06); box-shadow: 0 6px 28px rgba(124,58,237,0.8); }
 
-        #modal-paquetes, #modal-tipo-precio, #modal-conflicto-paquetes {
+        #modal-paquetes, #modal-tipo-precio, #modal-conflicto-paquetes, #modal-dia-paquete {
             display: none;
             position: fixed; inset: 0;
             background: rgba(0,0,0,0.80);
@@ -231,7 +231,7 @@
             align-items: center;
             justify-content: center;
         }
-        #modal-paquetes.open, #modal-tipo-precio.open, #modal-conflicto-paquetes.open { display: flex; }
+        #modal-paquetes.open, #modal-tipo-precio.open, #modal-conflicto-paquetes.open, #modal-dia-paquete.open { display: flex; }
         .modal-box {
             background: #1e293b;
             border: 1px solid #334155;
@@ -390,6 +390,7 @@
             #modal-paquetes { display: none !important; }
             #modal-tipo-precio { display: none !important; }
             #modal-conflicto-paquetes { display: none !important; }
+            #modal-dia-paquete { display: none !important; }
             .copyright-footer { display: none !important; }
         }
     </style>
@@ -660,6 +661,28 @@ Si tiene alguna consulta antes, durante o después de su viaje, con gusto podemo
     </div>
 </div>
 
+<div id="modal-dia-paquete">
+    <div class="modal-box modal-box-alert">
+        <h2>📅 ¿PARA QUÉ DÍA ES ESTE PAQUETE?</h2>
+        <p class="alert-subtitle" id="dia-paquete-texto">
+            Selecciona el día en el que se ubicarán las actividades de este paquete.
+        </p>
+        <button class="btn-tipo-precio btn-conflicto-mantener" onclick="seleccionarDiaPaquete(1)">
+            <span>Día 1</span>
+        </button>
+        <button class="btn-tipo-precio btn-conflicto-mantener" onclick="seleccionarDiaPaquete(2)">
+            <span>Día 2</span>
+        </button>
+        <button class="btn-tipo-precio btn-conflicto-mantener" onclick="seleccionarDiaPaquete(3)">
+            <span>Día 3</span>
+        </button>
+        <button class="btn-tipo-precio btn-conflicto-mantener" onclick="seleccionarDiaPaquete(4)">
+            <span>Día 4</span>
+        </button>
+        <button class="modal-close" onclick="cancelarDiaPaquete()">✕ Cancelar</button>
+    </div>
+</div>
+
 <span class="copyright-footer no-print">Copyright © 2026 Ku</span>
 
 <script>
@@ -790,18 +813,21 @@ Se recomienda a los participantes respetar los horarios establecidos para garant
             config: { 
                 observaciones: `El itinerario ha sido diseñado para ofrecer una experiencia segura, auténtica e inolvidable. No obstante, podrá estar sujeto a modificaciones debido a condiciones climáticas, fuerza mayor, estado de los senderos, restricciones de acceso, recomendaciones de las autoridades locales o cualquier otra situación fuera del control de ATI TUR R.L.
 Por razones de seguridad y para garantizar el adecuado desarrollo de la experiencia, es importante respetar los horarios establecidos y seguir en todo momento las indicaciones del guía local.
+
 ATITUR R.L. promueve un turismo responsable y sostenible. Invitamos a todos nuestros visitantes a cuidar el entorno natural, no dejar residuos, respetar la flora y fauna del lugar, así como valorar las costumbres y tradiciones de las comunidades anfitrionas.
 Si tiene alguna consulta antes, durante o después de su experiencia, será un gusto atenderle.
-`,
-                recomendaciones: `Para disfrutar al máximo de esta experiencia en la montaña, le recomendamos:
-Llevar suficiente agua para mantenerse hidratado durante el recorrido.
-Utilizar zapatos o botas cómodas con buena tracción, ideales para caminatas en terreno irregular.
-Aplicar protector solar antes y durante la actividad.
-Llevar repelente de insectos.
-Vestir ropa cómoda y adecuada para actividades al aire libre; se recomienda llevar una chaqueta ligera o impermeable, ya que el clima en la montaña puede cambiar rápidamente.
-Llevar gorra o sombrero para protegerse del sol.
-Portar una cámara fotográfica o teléfono móvil con suficiente batería para capturar los mejores momentos y paisajes de la experiencia.
-Si lo considera necesario, puede llevar un pequeño refrigerio energético para el recorrido.`,
+
+                `,
+                recomendaciones: `Recomendaciones
+Para disfrutar al máximo de esta experiencia en la montaña, le recomendamos:
+- Llevar suficiente agua para mantenerse hidratado durante el recorrido.
+- Utilizar zapatos o botas cómodas con buena tracción, ideales para caminatas en terreno irregular.
+- Aplicar protector solar antes y durante la actividad.
+- Llevar repelente de insectos.
+- Vestir ropa cómoda y adecuada para actividades al aire libre; se recomienda llevar una chaqueta ligera o impermeable, ya que el clima en la montaña puede cambiar rápidamente.
+- Llevar gorra o sombrero para protegerse del sol.
+- Portar una cámara fotográfica o teléfono móvil con suficiente batería para capturar los mejores momentos y paisajes de la experiencia.
+- Si lo considera necesario, puede llevar un pequeño refrigerio energético para el recorrido.`,
                 almuerzoGuia: 0,
                 desayunoGuia: 35,
                 // Puedes definir porcentajes personalizados para este paquete si lo deseas:
@@ -826,10 +852,24 @@ Si lo considera necesario, puede llevar un pequeño refrigerio energético para 
             actividades: ["rostro_may","rostro_may1","rostro_may2","rostro_may3"],
             dia: 1,
             config: { 
-                observaciones: OBS_DEFAULT,
-                recomendaciones: `Recomendaciones. 
-Llevar agua y llevar chumpa.`,
-                almuerzoGuia: 0,
+                observaciones: `El itinerario ha sido diseñado para ofrecer una experiencia segura, auténtica e inolvidable. No obstante, podrá estar sujeto a modificaciones debido a condiciones climáticas, fuerza mayor, estado de los senderos, restricciones de acceso, recomendaciones de las autoridades locales o cualquier otra situación fuera del control de ATI TUR R.L.
+Por razones de seguridad y para garantizar el adecuado desarrollo de la experiencia, es importante respetar los horarios establecidos y seguir en todo momento las indicaciones del guía local.
+
+ATITUR R.L. promueve un turismo responsable y sostenible. Invitamos a todos nuestros visitantes a cuidar el entorno natural, no dejar residuos, respetar la flora y fauna del lugar, así como valorar las costumbres y tradiciones de las comunidades anfitrionas.
+Si tiene alguna consulta antes, durante o después de su experiencia, será un gusto atenderle.
+
+                `,
+                recomendaciones: `Recomendaciones
+Para disfrutar al máximo de esta experiencia en la montaña, le recomendamos:
+- Llevar suficiente agua para mantenerse hidratado durante el recorrido.
+- Utilizar zapatos o botas cómodas con buena tracción, ideales para caminatas en terreno irregular.
+- Aplicar protector solar antes y durante la actividad.
+- Llevar repelente de insectos.
+- Vestir ropa cómoda y adecuada para actividades al aire libre; se recomienda llevar una chaqueta ligera o impermeable, ya que el clima en la montaña puede cambiar rápidamente.
+- Llevar gorra o sombrero para protegerse del sol.
+- Portar una cámara fotográfica o teléfono móvil con suficiente batería para capturar los mejores momentos y paisajes de la experiencia.
+- Si lo considera necesario, puede llevar un pequeño refrigerio energético para el recorrido.`,
+                 almuerzoGuia: 0,
                 desayunoGuia: 0,
                 // Puedes definir porcentajes personalizados para este paquete si lo deseas:
                 porcentajes: {
@@ -855,10 +895,13 @@ Llevar agua y llevar chumpa.`,
             config: { 
                 observaciones: `El itinerario ha sido diseñado para brindar la mejor experiencia posible; sin embargo, podrá sufrir modificaciones debido a condiciones climáticas, situaciones de fuerza mayor, restricciones de acceso, condiciones de navegación, cierres temporales o cualquier otro acontecimiento ajeno al control de ATI TUR R.L.
 ATITUR R.L. promueve el turismo responsable, por lo que invitamos a nuestros visitantes a cuidar el medio ambiente, respetar las comunidades anfitrionas y seguir las indicaciones de los guías locales durante toda la experiencia.
-Si tiene alguna consulta antes, durante o después de su viaje, con gusto podemos ayudarle.`,
+
+Si tiene alguna consulta antes, durante o después de su viaje, con gusto podemos ayudarle.
+                `,
                 recomendaciones: `Recomendaciones. 
 
-Llevar agua, zapatos cómodos, protector solar, repelente, cámara fotográfica o teléfono con suficiente batería para capturar los mejores momento
+- Llevar agua, zapatos cómodos, protector solar, repelente, cámara fotográfica o teléfono con suficiente batería para capturar los mejores momento
+
 Se recomienda a los participantes respetar los horarios establecidos para garantizar el desarrollo adecuado de todas las actividades.`
 ,
                 almuerzoGuia: 65,
@@ -884,10 +927,19 @@ Se recomienda a los participantes respetar los horarios establecidos para garant
             descripcion: "Tour de Pueblos  ",
             actividades: ["Lanch_pv","demo_tintes","tour_abejas","tour_cerveza","recorrido_calles","alim_almuerzo_tipico","tour_cacao","visita_galeria","tour_cerveza","tuk","tour_santiago","mirador_san_antonio","tour_san_pedro_iglesia"],  
             dia: 1,
-            config: { 
-                observaciones: OBS_DEFAULT,
-                recomendaciones: RECOM_DEFAULT,
-                almuerzoGuia: 65,
+ config: { 
+                observaciones: `El itinerario ha sido diseñado para brindar la mejor experiencia posible; sin embargo, podrá sufrir modificaciones debido a condiciones climáticas, situaciones de fuerza mayor, restricciones de acceso, condiciones de navegación, cierres temporales o cualquier otro acontecimiento ajeno al control de ATI TUR R.L.
+ATITUR R.L. promueve el turismo responsable, por lo que invitamos a nuestros visitantes a cuidar el medio ambiente, respetar las comunidades anfitrionas y seguir las indicaciones de los guías locales durante toda la experiencia.
+
+Si tiene alguna consulta antes, durante o después de su viaje, con gusto podemos ayudarle.
+                `,
+                recomendaciones: `Recomendaciones. 
+
+- Llevar agua, zapatos cómodos, protector solar, repelente, cámara fotográfica o teléfono con suficiente batería para capturar los mejores momento
+
+Se recomienda a los participantes respetar los horarios establecidos para garantizar el desarrollo adecuado de todas las actividades.`
+,
+                 almuerzoGuia: 65,
                 desayunoGuia: 0,
                 // Puedes definir porcentajes personalizados para este paquete si lo deseas:
                 porcentajes: {
@@ -988,10 +1040,19 @@ Se recomienda a los participantes respetar los horarios establecidos para garant
             descripcion: "Tour de Cacao ",
             actividades: ["gui_es","tour_cacao2","Con"],  
             dia: 1,
-            config: { 
-                observaciones: OBS_DEFAULT,
-                recomendaciones: RECOM_DEFAULT,
-                almuerzoGuia: 0,
+  config: { 
+                observaciones: `El itinerario ha sido diseñado para brindar la mejor experiencia posible; sin embargo, podrá sufrir modificaciones debido a condiciones climáticas, situaciones de fuerza mayor, restricciones de acceso, condiciones de navegación, cierres temporales o cualquier otro acontecimiento ajeno al control de ATI TUR R.L.
+ATITUR R.L. promueve el turismo responsable, por lo que invitamos a nuestros visitantes a cuidar el medio ambiente, respetar las comunidades anfitrionas y seguir las indicaciones de los guías locales durante toda la experiencia.
+
+Si tiene alguna consulta antes, durante o después de su viaje, con gusto podemos ayudarle.
+                `,
+                recomendaciones: `Recomendaciones. 
+
+- Llevar agua, zapatos cómodos, protector solar, repelente, cámara fotográfica o teléfono con suficiente batería para capturar los mejores momento
+
+Se recomienda a los participantes respetar los horarios establecidos para garantizar el desarrollo adecuado de todas las actividades.`
+,
+                 almuerzoGuia: 0,
                 desayunoGuia: 0,
                 // Puedes definir porcentajes personalizados para este paquete si lo deseas:
                 porcentajes: {
@@ -1016,9 +1077,24 @@ Se recomienda a los participantes respetar los horarios establecidos para garant
             actividades: ["arbol", "mont" ],  
             dia: 1,
             config: { 
-                observaciones: OBS_DEFAULT,
-                recomendaciones: RECOM_DEFAULT,
-                almuerzoGuia: 0,
+                observaciones: `El itinerario ha sido diseñado para ofrecer una experiencia segura, auténtica e inolvidable. No obstante, podrá estar sujeto a modificaciones debido a condiciones climáticas, fuerza mayor, estado de los senderos, restricciones de acceso, recomendaciones de las autoridades locales o cualquier otra situación fuera del control de ATI TUR R.L.
+Por razones de seguridad y para garantizar el adecuado desarrollo de la experiencia, es importante respetar los horarios establecidos y seguir en todo momento las indicaciones del guía local.
+
+ATITUR R.L. promueve un turismo responsable y sostenible. Invitamos a todos nuestros visitantes a cuidar el entorno natural, no dejar residuos, respetar la flora y fauna del lugar, así como valorar las costumbres y tradiciones de las comunidades anfitrionas.
+Si tiene alguna consulta antes, durante o después de su experiencia, será un gusto atenderle.
+
+                `,
+                recomendaciones: `Recomendaciones
+Para disfrutar al máximo de esta experiencia en la montaña, le recomendamos:
+- Llevar suficiente agua para mantenerse hidratado durante el recorrido.
+- Utilizar zapatos o botas cómodas con buena tracción, ideales para caminatas en terreno irregular.
+- Aplicar protector solar antes y durante la actividad.
+- Llevar repelente de insectos.
+- Vestir ropa cómoda y adecuada para actividades al aire libre; se recomienda llevar una chaqueta ligera o impermeable, ya que el clima en la montaña puede cambiar rápidamente.
+- Llevar gorra o sombrero para protegerse del sol.
+- Portar una cámara fotográfica o teléfono móvil con suficiente batería para capturar los mejores momentos y paisajes de la experiencia.
+- Si lo considera necesario, puede llevar un pequeño refrigerio energético para el recorrido.`,
+                 almuerzoGuia: 0,
                 desayunoGuia: 0,
                 // Puedes definir porcentajes personalizados para este paquete si lo deseas:
                 porcentajes: {
@@ -1068,10 +1144,19 @@ Se recomienda a los participantes respetar los horarios establecidos para garant
             descripcion: "Tour de naturaleza",
             actividades: ["tour_siembra_tul","tour_pesca_artesanal","refaccion"],  
             dia: 1,
-            config: { 
-                observaciones: OBS_DEFAULT,
-                recomendaciones: RECOM_DEFAULT,
-                almuerzoGuia: 0,
+  config: { 
+                observaciones: `El itinerario ha sido diseñado para brindar la mejor experiencia posible; sin embargo, podrá sufrir modificaciones debido a condiciones climáticas, situaciones de fuerza mayor, restricciones de acceso, condiciones de navegación, cierres temporales o cualquier otro acontecimiento ajeno al control de ATI TUR R.L.
+ATITUR R.L. promueve el turismo responsable, por lo que invitamos a nuestros visitantes a cuidar el medio ambiente, respetar las comunidades anfitrionas y seguir las indicaciones de los guías locales durante toda la experiencia.
+
+Si tiene alguna consulta antes, durante o después de su viaje, con gusto podemos ayudarle.
+                `,
+                recomendaciones: `Recomendaciones. 
+
+- Llevar agua, zapatos cómodos, protector solar, repelente, cámara fotográfica o teléfono con suficiente batería para capturar los mejores momento
+
+Se recomienda a los participantes respetar los horarios establecidos para garantizar el desarrollo adecuado de todas las actividades.`
+,
+                 almuerzoGuia: 0,
                 desayunoGuia: 0,
                 // Puedes definir porcentajes personalizados para este paquete si lo deseas:
                 porcentajes: {
@@ -1094,10 +1179,19 @@ Se recomienda a los participantes respetar los horarios establecidos para garant
             descripcion: "Tour de naturaleza",
             actividades: ["tour_pesca_artesanal","exp_gastronomica_local","recorrido_mer"],  
             dia: 1,
-            config: { 
-                observaciones: OBS_DEFAULT,
-                recomendaciones: RECOM_DEFAULT,
-                almuerzoGuia: 100,
+  config: { 
+                observaciones: `El itinerario ha sido diseñado para brindar la mejor experiencia posible; sin embargo, podrá sufrir modificaciones debido a condiciones climáticas, situaciones de fuerza mayor, restricciones de acceso, condiciones de navegación, cierres temporales o cualquier otro acontecimiento ajeno al control de ATI TUR R.L.
+ATITUR R.L. promueve el turismo responsable, por lo que invitamos a nuestros visitantes a cuidar el medio ambiente, respetar las comunidades anfitrionas y seguir las indicaciones de los guías locales durante toda la experiencia.
+
+Si tiene alguna consulta antes, durante o después de su viaje, con gusto podemos ayudarle.
+                `,
+                recomendaciones: `Recomendaciones. 
+
+- Llevar agua, zapatos cómodos, protector solar, repelente, cámara fotográfica o teléfono con suficiente batería para capturar los mejores momento
+
+Se recomienda a los participantes respetar los horarios establecidos para garantizar el desarrollo adecuado de todas las actividades.`
+,
+                 almuerzoGuia: 100,
                 desayunoGuia: 0,
                 // Puedes definir porcentajes personalizados para este paquete si lo deseas:
                 porcentajes: {
@@ -1119,9 +1213,18 @@ Se recomienda a los participantes respetar los horarios establecidos para garant
             descripcion: "Tour de naturaleza",
             actividades: ["tour_siembra_tul","demo_artesania_tul","refaccion"],  
             dia: 1,
-            config: { 
-                observaciones: OBS_DEFAULT,
-                recomendaciones: RECOM_DEFAULT,
+  config: { 
+                observaciones: `El itinerario ha sido diseñado para brindar la mejor experiencia posible; sin embargo, podrá sufrir modificaciones debido a condiciones climáticas, situaciones de fuerza mayor, restricciones de acceso, condiciones de navegación, cierres temporales o cualquier otro acontecimiento ajeno al control de ATI TUR R.L.
+ATITUR R.L. promueve el turismo responsable, por lo que invitamos a nuestros visitantes a cuidar el medio ambiente, respetar las comunidades anfitrionas y seguir las indicaciones de los guías locales durante toda la experiencia.
+
+Si tiene alguna consulta antes, durante o después de su viaje, con gusto podemos ayudarle.
+                `,
+                recomendaciones: `Recomendaciones. 
+
+- Llevar agua, zapatos cómodos, protector solar, repelente, cámara fotográfica o teléfono con suficiente batería para capturar los mejores momento
+
+Se recomienda a los participantes respetar los horarios establecidos para garantizar el desarrollo adecuado de todas las actividades.`
+,
                 almuerzoGuia: 0,
                 desayunoGuia: 35,
                 // Puedes definir porcentajes personalizados para este paquete si lo deseas:
@@ -1175,9 +1278,24 @@ Se recomienda a los participantes respetar los horarios establecidos para garant
             actividades: ["transp_Vol","V1","almuerzo_d3","Camping", "guia_cam"],  
             dia: 1,
             config: { 
-                observaciones: OBS_DEFAULT,
-                recomendaciones: RECOM_DEFAULT,
-                almuerzoGuia: 0,
+                observaciones: `El itinerario ha sido diseñado para ofrecer una experiencia segura, auténtica e inolvidable. No obstante, podrá estar sujeto a modificaciones debido a condiciones climáticas, fuerza mayor, estado de los senderos, restricciones de acceso, recomendaciones de las autoridades locales o cualquier otra situación fuera del control de ATI TUR R.L.
+Por razones de seguridad y para garantizar el adecuado desarrollo de la experiencia, es importante respetar los horarios establecidos y seguir en todo momento las indicaciones del guía local.
+
+ATITUR R.L. promueve un turismo responsable y sostenible. Invitamos a todos nuestros visitantes a cuidar el entorno natural, no dejar residuos, respetar la flora y fauna del lugar, así como valorar las costumbres y tradiciones de las comunidades anfitrionas.
+Si tiene alguna consulta antes, durante o después de su experiencia, será un gusto atenderle.
+
+                `,
+                recomendaciones: `Recomendaciones
+Para disfrutar al máximo de esta experiencia en la montaña, le recomendamos:
+- Llevar suficiente agua para mantenerse hidratado durante el recorrido.
+- Utilizar zapatos o botas cómodas con buena tracción, ideales para caminatas en terreno irregular.
+- Aplicar protector solar antes y durante la actividad.
+- Llevar repelente de insectos.
+- Vestir ropa cómoda y adecuada para actividades al aire libre; se recomienda llevar una chaqueta ligera o impermeable, ya que el clima en la montaña puede cambiar rápidamente.
+- Llevar gorra o sombrero para protegerse del sol.
+- Portar una cámara fotográfica o teléfono móvil con suficiente batería para capturar los mejores momentos y paisajes de la experiencia.
+- Si lo considera necesario, puede llevar un pequeño refrigerio energético para el recorrido.`,
+                  almuerzoGuia: 0,
                 desayunoGuia: 35,
                 // Puedes definir porcentajes personalizados para este paquete si lo deseas:
                 porcentajes: {
@@ -1200,10 +1318,19 @@ Se recomienda a los participantes respetar los horarios establecidos para garant
             descripcion: "Tour de naturaleza",
             actividades: [ "H11" ],  
             dia: 1,
-            config: { 
-                observaciones: OBS_DEFAULT,
-                recomendaciones: RECOM_DEFAULT,
-                almuerzoGuia: 0,
+  config: { 
+                observaciones: `El itinerario ha sido diseñado para brindar la mejor experiencia posible; sin embargo, podrá sufrir modificaciones debido a condiciones climáticas, situaciones de fuerza mayor, restricciones de acceso, condiciones de navegación, cierres temporales o cualquier otro acontecimiento ajeno al control de ATI TUR R.L.
+ATITUR R.L. promueve el turismo responsable, por lo que invitamos a nuestros visitantes a cuidar el medio ambiente, respetar las comunidades anfitrionas y seguir las indicaciones de los guías locales durante toda la experiencia.
+
+Si tiene alguna consulta antes, durante o después de su viaje, con gusto podemos ayudarle.
+                `,
+                recomendaciones: `Recomendaciones. 
+
+- Llevar agua, zapatos cómodos, protector solar, repelente, cámara fotográfica o teléfono con suficiente batería para capturar los mejores momento
+
+Se recomienda a los participantes respetar los horarios establecidos para garantizar el desarrollo adecuado de todas las actividades.`
+,
+                 almuerzoGuia: 0,
                 desayunoGuia: 0,
                 // Puedes definir porcentajes personalizados para este paquete si lo deseas:
                 porcentajes: {
@@ -1518,13 +1645,36 @@ Se recomienda a los participantes respetar los horarios establecidos para garant
         document.getElementById('modal-conflicto-paquetes').classList.remove('open');
         if (accion === 'reemplazar') {
             limpiarTodosPaquetes();
+            // Al quedar como único paquete, continuar directo al selector de tarifa
+            abrirSelectorTarifaPara(paqueteTemporalIdx);
+            return;
         }
-        // En ambos casos, continuar al selector de tarifa para el nuevo paquete
-        abrirSelectorTarifaPara(paqueteTemporalIdx);
+        // Se está agregando un paquete adicional (2°, 3°, 4°...): primero preguntar a qué día pertenece
+        mostrarModalDiaPaquete();
     }
 
     function cancelarConflictoPaquetes() {
         document.getElementById('modal-conflicto-paquetes').classList.remove('open');
+        paqueteTemporalIdx = null;
+    }
+
+    // Pregunta para qué día (1-4) será el paquete que se está por agregar
+    function mostrarModalDiaPaquete() {
+        const nombreNuevo = PAQUETES[paqueteTemporalIdx].nombre.trim();
+        document.getElementById('dia-paquete-texto').innerHTML =
+            `¿Para qué día será <b>${nombreNuevo}</b>?`;
+        document.getElementById('modal-dia-paquete').classList.add('open');
+    }
+
+    function seleccionarDiaPaquete(dia) {
+        PAQUETES[paqueteTemporalIdx].dia = dia;
+        document.getElementById('modal-dia-paquete').classList.remove('open');
+        // Continuar con el proceso normal: selector de tarifa para el nuevo paquete
+        abrirSelectorTarifaPara(paqueteTemporalIdx);
+    }
+
+    function cancelarDiaPaquete() {
+        document.getElementById('modal-dia-paquete').classList.remove('open');
         paqueteTemporalIdx = null;
     }
 
