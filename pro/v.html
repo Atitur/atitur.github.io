@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estatutos AtiTur, R.L. - Texto Completo 92 Artículos</title>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --accent-blue: #0284c7;
+      --border-color: #334155;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+    body {
+      background-color: var(--bg-color);
+      color: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    header {
+      background-color: #020617;
+      padding: 0.8rem 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      z-index: 10;
+    }
+
+    header h1 { font-size: 1.15rem; font-weight: 600; color: #38bdf8; }
+    header p { font-size: 0.8rem; color: var(--text-muted); }
+
+    .main-container {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 55px);
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 280px;
+      background-color: #090d16;
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-header {
+      padding: 0.75rem;
+      background-color: #020617;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .search-box {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: white;
+      border-radius: 6px;
+      outline: none;
+      font-size: 0.85rem;
+    }
+
+    .chapter-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.5rem;
+    }
+
+    .chapter-group { margin-bottom: 0.5rem; }
+
+    .chapter-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--accent-blue);
+      padding: 0.4rem 0.5rem;
+      background: rgba(2, 132, 199, 0.1);
+      border-radius: 4px;
+      margin-bottom: 0.25rem;
+    }
+
+    .article-item {
+      font-size: 0.78rem;
+      padding: 0.4rem 0.6rem;
+      margin: 2px 0;
+      border-radius: 4px;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+
+    .article-item:hover, .article-item.active {
+      background-color: var(--card-bg);
+      color: #38bdf8;
+      font-weight: 600;
+    }
+
+    .article-item.active { border-left: 3px solid #38bdf8; }
+
+    /* Área del Diagrama */
+    .diagram-area {
+      flex: 1;
+      position: relative;
+      background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 1rem;
+      overflow: hidden;
+    }
+
+    .svg-container {
+      flex: 1;
+      width: 100%;
+      overflow: auto; /* Permite scroll si el organigrama es muy grande */
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    svg {
+      width: 100%;
+      height: 100%;
+      min-width: 1000px;
+      min-height: 650px;
+    }
+
+    .node { cursor: pointer; transition: all 0.3s ease; }
+    .node rect { rx: 8px; ry: 8px; stroke-width: 2px; transition: all 0.3s ease; }
+
+    .node.dimmed { opacity: 0.15; filter: grayscale(100%); }
+
+    .node.active-node rect {
+      stroke: #f59e0b !important;
+      stroke-width: 3.5px !important;
+      filter: drop-shadow(0 0 16px rgba(245, 158, 11, 0.9));
+    }
+
+    /* Sub-nodos Dinámicos */
+    .subnode {
+      cursor: pointer;
+      opacity: 0;
+      transform: scale(0.8);
+      animation: fadeIn 0.3s forwards ease-out;
+    }
+
+    .subnode rect {
+      rx: 6px; ry: 6px; stroke-width: 2px;
+      filter: drop-shadow(0 0 10px rgba(0,0,0,0.6));
+    }
+
+    .subnode text.sub-title { font-size: 11px; font-weight: bold; fill: #ffffff; pointer-events: none; }
+    .subnode text.sub-desc { font-size: 8.5px; fill: #cbd5e1; pointer-events: none; }
+
+    /* Nodos Hijos de Artículos (Chips) */
+    .art-chip {
+      cursor: pointer;
+      opacity: 0;
+      animation: fadeIn 0.3s forwards ease-out;
+    }
+    .art-chip rect {
+      rx: 4px; ry: 4px;
+      fill: #090d16;
+      stroke-width: 1.5px;
+      transition: all 0.2s;
+    }
+    .art-chip:hover rect {
+      fill: #1e293b;
+      stroke: #ffffff !important;
+      stroke-width: 2.5px;
+    }
+    .art-chip text { font-size: 9px; font-weight: bold; fill: #f8fafc; pointer-events: none; }
+
+    @keyframes fadeIn {
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .link, .sublink, .artlink {
+      fill: none;
+      stroke-dasharray: 4 4;
+      opacity: 0.6;
+    }
+    .link { stroke: #475569; stroke-width: 1.5px; }
+    .sublink { stroke-width: 2px; }
+    .artlink { stroke-width: 1px; opacity: 0.3; }
+
+    .node text.title { font-size: 12px; font-weight: bold; fill: #ffffff; pointer-events: none; }
+    .node text.subtitle { font-size: 9.5px; fill: #cbd5e1; pointer-events: none; }
+
+    /* Panel Informativo */
+    .info-panel {
+      background: rgba(15, 23, 42, 0.98);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem 1.5rem;
+      margin-top: 0.5rem;
+      height: 240px;
+      min-height: 240px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 -10px 20px rgba(0,0,0,0.3);
+    }
+
+    .info-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.6rem;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 0.5rem;
+    }
+
+    .info-panel-title { font-size: 1.1rem; font-weight: bold; color: #38bdf8; }
+    .info-panel-relation { font-size: 0.8rem; background: #0284c7; color: white; padding: 4px 10px; border-radius: 10px; }
+    
+    .info-panel-body {
+      overflow-y: auto;
+      flex: 1;
+      padding-right: 10px;
+    }
+
+    .info-panel-text { font-size: 0.9rem; line-height: 1.6; color: #e2e8f0; text-align: justify; white-space: pre-wrap; }
+
+    .info-panel-body::-webkit-scrollbar { width: 6px; }
+    .info-panel-body::-webkit-scrollbar-track { background: #0f172a; }
+    .info-panel-body::-webkit-scrollbar-thumb { background: #38bdf8; border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div>
+      <h1>ESTATUTOS DE LA COOPERATIVA ATITUR, R.L. (92 ARTÍCULOS COMPLETOS)</h1>
+      <p>Haz clic en la lista lateral o en los nodos. Luego, haz clic en un número de artículo (chip) para leer su TEXTO COMPLETO abajo.</p>
+    </div>
+  </header>
+
+  <div class="main-container">
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <input type="text" class="search-box" placeholder="Buscar artículo..." onkeyup="filterArticles(this.value)">
+      </div>
+      <div class="chapter-list" id="chapterContainer"></div>
+    </div>
+
+    <div class="diagram-area">
+      <div class="svg-container">
+        <svg viewBox="0 0 1200 700" id="mainSvg" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b" />
+            </marker>
+            <marker id="arrow-blue" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8" />
+            </marker>
+            <marker id="arrow-green" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#2dd4bf" />
+            </marker>
+            <marker id="arrow-red" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#fb7185" />
+            </marker>
+            <marker id="arrow-yellow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#fbbf24" />
+            </marker>
+          </defs>
+
+          <!-- Enlaces Estáticos Base -->
+          <g id="baseLinks">
+            <!-- Asamblea central arriba -->
+            <path class="link" d="M 600,60 L 200,130" marker-end="url(#arrow)"></path>
+            <path class="link" d="M 600,60 L 550,130" marker-end="url(#arrow)"></path>
+            <path class="link" d="M 600,60 L 900,130" marker-end="url(#arrow)"></path>
+            <path class="link" d="M 550,180 L 600,250" marker-end="url(#arrow)"></path>
+            <path class="link" d="M 600,300 L 600,360" marker-end="url(#arrow)"></path>
+            <path class="link" d="M 600,60 L 600,430" marker-end="url(#arrow)" stroke-dasharray="2 4"></path> <!-- Link a AtiTur -->
+          </g>
+
+          <!-- Capas Dinámicas -->
+          <g id="dynamicLinks"></g>
+          <g id="dynamicArtLinks"></g>
+
+          <!-- Nodos Principales -->
+          <g id="mainNodes">
+            <g id="node-asamblea" class="node" onclick="toggleCategoryNode('node-asamblea')">
+              <rect x="500" y="10" width="200" height="50" fill="#0369a1" stroke="#38bdf8"/>
+              <text x="600" y="32" text-anchor="middle" class="title">ASAMBLEA GENERAL</text>
+              <text x="600" y="48" text-anchor="middle" class="subtitle">Órgano Soberano (Art. 34-45)</text>
+            </g>
+
+            <g id="node-consejo" class="node" onclick="toggleCategoryNode('node-consejo')">
+              <rect x="100" y="130" width="200" height="50" fill="#15803d" stroke="#4ade80"/>
+              <text x="200" y="152" text-anchor="middle" class="title">CONSEJO DE ADMÓN.</text>
+              <text x="200" y="168" text-anchor="middle" class="subtitle">Dirección (Art. 46-60)</text>
+            </g>
+
+            <g id="node-educacion" class="node" onclick="toggleCategoryNode('node-educacion')">
+              <rect x="450" y="130" width="200" height="50" fill="#0f766e" stroke="#2dd4bf"/>
+              <text x="550" y="152" text-anchor="middle" class="title">COMITÉ DE EDUCACIÓN</text>
+              <text x="550" y="168" text-anchor="middle" class="subtitle">Educativo (Art. 64-66)</text>
+            </g>
+
+            <g id="node-vigilancia" class="node" onclick="toggleCategoryNode('node-vigilancia')">
+              <rect x="800" y="130" width="200" height="50" fill="#c2410c" stroke="#fb923c"/>
+              <text x="900" y="152" text-anchor="middle" class="title">COMISIÓN DE VIGILANCIA</text>
+              <text x="900" y="168" text-anchor="middle" class="subtitle">Fiscalización (Art. 61-63)</text>
+            </g>
+
+            <g id="node-gerencia" class="node" onclick="toggleCategoryNode('node-gerencia')">
+              <rect x="500" y="250" width="200" height="50" fill="#6d28d9" stroke="#a78bfa"/>
+              <text x="600" y="272" text-anchor="middle" class="title">GERENCIA GENERAL</text>
+              <text x="600" y="288" text-anchor="middle" class="subtitle">Operativa (Art. 67-69)</text>
+            </g>
+
+            <g id="node-asociados" class="node" onclick="toggleCategoryNode('node-asociados')">
+              <rect x="490" y="360" width="220" height="55" fill="#1e293b" stroke="#38bdf8"/>
+              <text x="600" y="384" text-anchor="middle" class="title">PERSONAS ASOCIADAS</text>
+              <text x="600" y="400" text-anchor="middle" class="subtitle">Base Social (Art. 16 - 33)</text>
+            </g>
+
+            <g id="node-entidad" class="node" onclick="toggleCategoryNode('node-entidad')">
+              <rect x="500" y="430" width="220" height="55" fill="#334155" stroke="#94a3b8"/>
+              <text x="600" y="454" text-anchor="middle" class="title">COOPERATIVA ATITUR</text>
+              <text x="600" y="470" text-anchor="middle" class="subtitle">Estructura Legal (Art. 1-15, 70-92)</text>
+            </g>
+          </g>
+
+          <g id="dynamicSubnodes"></g>
+          <g id="dynamicArtNodes"></g>
+        </svg>
+      </div>
+
+      <div class="info-panel" id="infoPanel">
+        <div class="info-panel-header">
+          <span class="info-panel-title" id="panelTitle">Analizador de Estatutos</span>
+          <span class="info-panel-relation" id="panelRelation">AtiTur, R.L.</span>
+        </div>
+        <div class="info-panel-body">
+          <div class="info-panel-text" id="panelText">
+            Bienvenido. Haz clic en la lista lateral o en los nodos del organigrama para desplegar los artículos. Luego, haz clic sobre el número de artículo (ej. Art. 16º) para leer su texto completo y literal aquí.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentlyExpandedNode = null;
+
+    // BASE DE DATOS CON LOS 92 ARTÍCULOS TEXTUALES
+    const articlesDB = {
+      1: `Con fecha diez de julio del dos mil veinticuatro, se organizó la COOPERATIVA INTEGRAL DE SERVICIOS ESPECIALES DE TURISMO LAGO ATITLÁN, RESPONSABILIDAD LIMITADA que podrá abreviarse: AtiTur, R. L., bajo el amparo de las leyes que le son aplicables.`,
+      2: `El domicilio de la cooperativa se fija en el departamento de Sololá y tendrá su sede en San Juan La Laguna, cuando el Consejo de Administración lo proponga y la Asamblea General lo apruebe podrá establecer agencias o sucursales dentro del territorio de la República.`,
+      3: `La cooperativa operara con apego a los principios siguientes: No perseguir fines de lucro, sino de servicios para sus asociados; Libre adhesión y retiro voluntario de los asociados; Neutralidad política y religiosa en sus actos; Igualdad de derecho y obligaciones entre todas las personas asociadas; Conceder a cada asociado un solo voto, cualquiera que sea el número y monto de sus aportaciones; Fomentar la educación e integración cooperativa y el establecimiento de servicios sociales. Promover la igualdad de género en todas sus actividades, y la eliminación de cualquier tipo de discriminación. Crear un ambiente laboral que fomente el trabajo decente, Promover la protección del medio ambiente, mediante la adopción de medidas para conservar el patrimonio ambiental de la región, minimizar impactos negativos ambientales, y mejorar el desempeño ambiental, fomentando la conciencia y el compromiso en acciones de conservación del medio ambiente, e incorporando aspectos ambientales en sus decisiones para contribuir al turismo sostenible y regenerativo.`,
+      4: `El objeto social de la cooperativa será, promover y desarrollar el Turismo Sostenible y Regenerativo de la Región del Lago de Atitlán, la captación y atención del turista; la coordinación de Actividades, Servicios y productos relacionados con el mismo.`,
+      5: `La cooperativa tendrá los objetivos siguientes: Promover el mejoramiento Social y Económico de las personas asociadas, mediante la realización de planes, programas, proyectos y actividades que demanden el esfuerzo común, la ayuda mutua, la acción conjunta y la solidaridad; evitando la competencia desleal de cooperativa hacia asociados y de asociados hacia la cooperativa. Fomentar entre los asociados todas aquellas acciones tendientes a desarrollar las actividades y servicios turísticos a fin de promover la actividad turística sostenible y regenerativa del departamento de Sololá; Propiciar dentro de la empresa, la práctica y los valores del cooperativismo, tanto en su filosofía, y su funcionamiento; Estimular y mantener en los asociados, las aptitudes y confianza necesaria con el objeto de que la empresa cooperativa, se constituya en una organización productiva y, Garantizar la eficiencia y la seguridad, para que se proporcione a los asociados, sus familias y la comunidad en general, el mejor servicio posible.`,
+      6: `Para el logro de sus objetivos la Cooperativa realizará las actividades y operaciones siguientes: Percibir el valor de las aportaciones de sus miembros; Percibir el valor de las cuotas de ingreso, así como las contribuciones ordinarias y extraordinarias que la Asamblea General acuerde para fines específicos; Concentrar los esfuerzos y trabajos, mejorando los lugares turísticos existentes y la creación de otros, acorde a las necesidades del sector, mediante un proceso de investigación y promoción con la finalidad de captar el Turismo en todas sus formas; Gestionar y conceder préstamos a las personas asociadas que faciliten la realización de sus propósitos; Llevar cuenta y registro de las operaciones que cada persona asociada realice con la Cooperativa; Adquirir el equipo y materiales necesarios para su funcionamiento; Obtener por compra, arrendamiento, usufructo o donación, bienes inmuebles para su uso o aprovechamiento en la forma que determine la Asamblea General, siempre que con ello no se limite la soberanía de la Cooperativa; Gestionar en la forma más conveniente para los intereses de la Cooperativa, préstamos o donaciones con instituciones financieras o de otra índole, sean estatales o privadas, nacionales o extranjeras; Federarse o establecer acuerdos con otras cooperativas; Preparar y ejecutar programas de educación cooperativa para los asociados y a la comunidad. Combinar cualquier otra actividad que tienda a incrementar la prestación de servicios a los asociados y a la comunidad en general, siempre que sean compatibles, que estén en concordancia con la ley y que contribuyan al desarrollo del movimiento cooperativo y turístico en la cuenca del Lago de Atitlán; Otras que sean propias de giro normal de la cooperativa.`,
+      7: `La duración de la cooperativa es indefinida, pero podrá disolverse cuando concurran las circunstancias a que se refiere el artículo 77º. De estos estatutos.`,
+      8: `La responsabilidad de la cooperativa es limitada, de los compromisos que contraiga, responde con su patrimonio. Las personas asociadas responden únicamente con el monto de sus aportaciones.`,
+      9: `Los medios económicos de la cooperativa están constituidos por: El capital cooperativo representado por las aportaciones; Las cuotas de ingreso, así como las contribuciones ordinarias y extraordinarias que acuerde la Asamblea General para fines específicos; Las reservas de capital y otras reservas contempladas en los presentes estatutos; Los préstamos que contraten con entidades financieras, públicas y privadas, nacionales o extranjeras, y Los bienes que adquiera a título oneroso, los donativos y subvenciones que reciba siempre que con ello no se limite la soberanía de la cooperativa y no se vulneren los principios cooperativos.`,
+      10: `El capital de la cooperativa es variable y está integrado por aportaciones individuales e indivisibles de un valor nominal de quinientos quetzales (Q.500.00) cada una.`,
+      11: `Las personas asociadas podrán pagar adicionalmente y en forma voluntaria el número de aportaciones que consideren convenientes, también deberán hacer efectivas las aportaciones adicionales para fines determinados que la Asamblea General acuerde, tanto las aportaciones obligatorias como las adicionales podrán devengar intereses cuya tasa será establecida por la Asamblea General de acuerdo a las condiciones económicas de la cooperativa, además de las aportaciones las personas asociadas están obligadas a pagar contribuciones ordinarias y extraordinarias que acuerde la Asamblea General para fines específicos.`,
+      12: `El Consejo de Administración otorgará un certificado o constancia para cada aportación totalmente pagada, el cual contendrá como mínimo los siguientes datos: Denominación de la cooperativa; Valor nominal; Nombre y apellidos de la persona asociada; Nombre del beneficiario o beneficiarios; Número del certificado; Fecha en la que se extiende el certificado; Firmas del presidente y tesorero del Consejo de Administración; y, Cualquier otro dato que se considere conveniente y oportuno consignar. Si se destruye o deteriora un certificado o constancia, la persona asociada lo hará saber por escrito al Consejo de Administración quien después de comprobar la destrucción o deterioro, otorgará otro con la leyenda “En reposición del número: _____”`,
+      13: `Las aportaciones obligatorias y adicionales totalmente pagadas son transferibles únicamente entre los asociados, previa autorización por escrito del Consejo de Administración.`,
+      14: `La cooperativa queda facultada para establecer en Asamblea General la comisión o porcentaje que cobrará a los asociados por cada una de las actividades que se realicen con motivo de la comercialización de los servicios y productos turísticos que desarrollen, con cuyos fondos se cubrirán los gastos de administración y operación que ocasionen las actividades derivadas de dichas operaciones, si los ingresos de la Cooperativa no fueran suficientes para cubrir sus gastos de administración general, la Asamblea acordará el pago de contribuciones ordinarias o extraordinarias.`,
+      15: `Las cuotas de ingreso establecidas en el inciso g) del artículo 16º de estos estatutos se usarán para cubrir los gastos administrativos y de registro que se ocasionen por el ingreso del asociado a la cooperativa; el saldo que resultare al final del ejercicio contable después de deducirle los gastos directos que le sean aplicables, se trasladará a la reserva irrepartible.`,
+      16: `Podrán ser asociados de la cooperativa, todas las personas naturales, y todas las personas que estén interesadas o que se dediquen a las actividades que la misma realiza y que deseen ingresar a ella, sin discriminación étnica, religiosa, política, de nacionalidad o de sexo, siempre que reúnan los requisitos siguientes: Ser legalmente capaces, salvo los casos de menores de edad, los cuales se regirán por un reglamento específico; Haber recibido capacitación en los aspectos fundamentales del cooperativismo; Tener necesidad de los servicios que presta la cooperativa; Gozar de buena reputación y estar en capacidad de cumplir con los requisitos señalados en estos estatutos y con las obligaciones que contraiga; Estar dispuesto a participar en las actividades que desarrolla la cooperativa, para tener derecho a excedentes y servicios que esta presta; Solicitar su ingreso por escrito al Consejo de Administración; Pagar la cuota por ingreso de veinticinco quetzales exactos (Q. 25.00), la cual será devuelta en caso de no ser admitido. Cualquier cambio en su valor será establecido por la Asamblea General.; No pertenecer a otra cooperativa que se dedique a la misma actividad que ésta desarrolla; No tener intereses que puedan entrar en conflicto con la cooperativa; y, Pagar una aportación en los términos establecidos en el artículo 10º. De estos estatutos. Compromiso en apegar su participación a los principios que rigen la operación de la cooperativa.`,
+      17: `El Consejo de Administración podrá rechazar cualquier solicitud de ingreso, si a su juicio no conviene a los intereses de la cooperativa, pero no podrá fundamentar el rechazo en consideraciones de orden político, religioso o social.`,
+      18: `Las personas integrantes de los órganos de la cooperativa en ningún caso tendrán para sí un trato preferencial en materia de beneficios o servicios derivados de las actividades de la cooperativa.`,
+      19: `La calidad de asociado se adquiere: Por suscripción del acta de constitución; y, Por ingreso a la cooperativa una vez que se haya constituido; en ambos casos, deberá haberse cancelado la cuota de ingreso y cumplir con lo relativo a la primera aportación.`,
+      20: `La calidad de asociado se pierde en los casos siguientes: Por renuncia voluntaria del asociado; Por expulsión al incurrir en alguna de las causales que establece el artículo 30º. de estos estatutos, acordada por el órgano competente; y, Por fallecimiento del asociado.`,
+      21: `Son obligaciones de los asociados: Asistir a los actos o reuniones a los que sean convocados; Cumplir estrictamente con estos estatutos, reglamentos y demás disposiciones de la cooperativa; Estar al día en el pago de sus aportaciones y demás obligaciones pecuniarias contraídas con la cooperativa; Desempeñar fielmente los cargos directivos y comisiones para los cuales sean electas o designadas; Dar a conocer a personas no asociadas los servicios que presta la cooperativa, a efecto que se interesen por ingresar a la misma; y, Cooperar en la solución de los problemas de la cooperativa y la comunidad donde opera. Promover en todas las actividades relacionadas a la cooperativa los principios que la rigen`,
+      22: `Son derechos de los asociados: Asistir a las Asambleas con voz y un solo voto, cualquiera que sea el número y monto de sus aportaciones. El voto deberá ejercerse personalmente, conforme al procedimiento establecido por la Asamblea General.; Elegir y ser electo para el desempeño de cargos directivos en la cooperativa; Participar en los servicios que presta la cooperativa, de acuerdo con las normas establecidas. Participar en la distribución de excedentes, de acuerdo con el monto de operaciones realizadas con la cooperativa, o la participación en las actividades de esta; Examinar las operaciones y registros contables de la cooperativa, conforme las reglas que establezca la Comisión de Vigilancia. Si el caso lo amerita, un número no menor del veinte por ciento (20%) de asociados activos, puede solicitar al Consejo de Administración que contrate o solicite la realización de una auditoria; Solicitar al Consejo de Administración o Comisión de Vigilancia que convoque a Asamblea General, con el apoyo de un número no menor de, veinte por ciento (20%) de los asociados activos; Presentar al Consejo de Administración o a la Asamblea General ordinaria, cualquier proyecto o iniciativa que tenga por objeto el mejoramiento de la cooperativa; y, Conocer el funcionamiento de la cooperativa e informar al Consejo de Administración o a la Comisión de Vigilancia, sobre cualquier dificultad, anomalía o problema relacionado con la misma.`,
+      23: `Todo asociado podrá retirarse voluntariamente de la cooperativa, para lo cual deberá comunicar su decisión por escrito al Consejo de Administración, con la debida anticipación.`,
+      24: `El retiro no exime las obligaciones que el asociado haya contraído, las cuales continuarán vigentes conforme al contrato o contratos respectivos, las normas establecidas en estos estatutos y reglamentos de régimen interno de la cooperativa.`,
+      25: `El asociado que se retire tendrá derecho al reembolso de sus aportaciones pagadas, a los intereses devengados por estas si se hubiere estipulado, a la parte de excedentes que le corresponda, siempre y cuando este al día en todas sus obligaciones con la cooperativa.`,
+      26: `La liquidación y pago indicados en el artículo anterior quedaran sujetos al resultado del ejercicio contable durante el cual se haya autorizado el retiro. El asociado no podrá exigir el reembolso de sus aportaciones de inmediato, salvo autorización por escrito del Consejo de Administración, hasta después de transcurridos noventa días de haber cerrado el ejercicio contable durante el cual se produjo el retiro. Dependiendo de la situación financiera de la cooperativa, el Consejo de Administración podrá devolver el monto de las aportaciones en la misma forma en que estas fueron pagadas por el asociado.`,
+      27: `Si en un ejercicio contable se hubiere producido perdida, el asociado que se retire o expulse, deberá disminuirse del total de sus aportaciones, la parte proporcional que le correspondiere, conforme al monto de las operaciones que hubere realizado con la cooperativa o a la participación en las actividades de la misma.`,
+      28: `Ningún asociado tendrá derecho a participar en las reservas establecidas en estos estatutos, tampoco podrá formular petición alguna sobre la parte proporcional del valor de los bienes que la cooperativa haya adquirido gratuitamente y no con fondos de los asociados.`,
+      29: `En caso de fallecimiento, enfermedad o fuerza mayor, el reembolso de los valores a que tenga derecho el asociado, de conformidad con estos estatutos, se entregará al beneficiario/a o beneficiarios/a que el asociado haya registrado en los certificados de aportación, o a la persona declarada legalmente heredero/a.`,
+      30: `El Consejo de Administración podrá amonestar, suspender en sus derechos o expulsar a un asociado, siempre que se encuentre comprendido en los casos siguientes: Que actué en contra de los intereses y principios de la cooperativa; Cuando no cumpla con sus compromisos y obligaciones con la cooperativa; Por aprovechar su calidad de asociado de la cooperativa para negociar con terceros por cuenta propia, a nombre de esta; Cuando cometa actos constitutivos de delito contra los asociadas o los bienes de la cooperativa; Cuando viole los estatutos, reglamentos y demás disposiciones de la cooperativa; Cuando haga competencia desleal a la cooperativa ; y, Por cometer otras faltas graves a criterio del Consejo de Administración.`,
+      31: `Para la aplicación del artículo anterior, el Consejo de Administración analizará la gravedad de la falta cometida por el asociado y establecerá si le corresponde amonestación, suspensión o expulsión.`,
+      32: `El asociado que se encuentre en los casos previstos en los dos artículos anteriores, será notificado por escrito y tendrá derecho a defenderse ante el Consejo de Administración, en caso de expulsión podrá apelar ante la Asamblea General Ordinaria, que el Consejo de Administración deberá convocar dentro del mes siguiente a la fecha de presentada la apelación; dicha apelación deberá presentarse a la secretaria del Consejo de Administración dentro de los diez (10) días siguientes a la fecha de la notificación. La Asamblea General por mayoría de votos, podrá ratificar o revocar la decisión del Consejo de Administración.`,
+      33: `Antes de acudir a la vía judicial, el Consejo de Administración tratará por todos los medios posibles, que los litigios con los asociados se resuelvan por la vía conciliatoria, solicitando a INACOP actuar como mediador si se considera necesario, dejando constancia de cada caso en acta levantada para el efecto.`,
+      34: `Son órganos de la cooperativa: La Asamblea General de asociados; El Consejo de Administración; Comisión de Vigilancia; El Comité de Educación; y, Otros comités que a criterio del Consejo de Administración sean necesarios crear para el buen funcionamiento de la cooperativa.`,
+      35: `El poder soberano de la cooperativa reside en los asociados reunidos en Asamblea General de conformidad con los presentes estatutos. Las Asambleas Generales podrán ser de carácter ordinario o extraordinario.`,
+      36: `Las Asambleas Generales estarán legalmente constituidas cuando en el lugar, día y hora señalado en la convocatoria, estén presentes por lo menos la mitad más uno (50% + 1) del número total de sus asociados activas; entendiéndose como tal aquel que esta al día con sus obligaciones estatutarias y contractuales. Si no se completare esta asistencia, la Asamblea se realizará el mismo día, una hora después, con el número de asociados asistentes. Las decisiones de las Asambleas, basadas en la ley, obligan a los asociados presentes y ausentes. De las deliberaciones y acuerdos de las Asambleas Generales se dejará constancia en acta. Las actas de las Asambleas Generales Ordinarias y Extraordinarias serán firmadas para su validez por los integrantes del Consejo de Administración y los asociados comparecientes.`,
+      37: `Las Asambleas Generales Ordinarias se llevarán a cabo: Una obligatoria, dentro de los noventa (90) días que siguen al cierre del ejercicio contable y deberá ocuparse principalmente de los siguiente: Discutir, aprobar o improbar los estados financieros, la aplicación de los resultados, del informe del Consejo de Administración y en su caso de la Comisión de Vigilancia; La elección de los miembros titulares y suplentes del Consejo de Administración, Comisión de Vigilancia y demás Comités creados según los estatutos; Aprobar o improbar anualmente el Plan de Trabajo y el Presupuesto de ingresos y egresos, presentado por el Consejo de Administración. Asambleas Generales Ordinarias: En cualquier tiempo que sean convocadas, para conocer los aspectos que de conformidad con el artículo 44º. De esos estatutos corresponde a esta Asamblea conocer.`,
+      38: `Las Asambleas Generales Ordinarias y Extraordinarias serán convocadas normalmente por el Consejo de Administración; cuando este no lo hiciere de conformidad con estos estatutos, la Comisión de Vigilancia deberá hacerlo, o cuando lo soliciten por lo menos el veinte por ciento (20%) de los asociados activos. En caso de Asambleas convocadas a solicitud de los asociados la petición deberá dirigirse por escrito al presidente del Consejo de Administración, o en su caso, al de la de la Comisión de Vigilancia. La convocatoria se hará con no menos de diez (10) días calendario de anticipación a la fecha de celebración de la Asamblea, mediante aviso a todos los asociados, quien fijará el lugar, día, hora y objeto de la misma. El aviso debe colocarse además en un lugar visible en el local de la Cooperativa. Cuando se trate de Asamblea General Extraordinaria, la convocatoria deberá indicar también con toda claridad el asunto o asuntos a tratar, los cuales se conocerán con exclusividad.`,
+      39: `Las resoluciones de las Asambleas Generales se tomarán por simple mayoría de votos; salvo en los casos de reforma de estatutos o disolución de la cooperativa, en que se requerirá del voto afirmativo de por lo menos las dos terceras (2/3) partes de los asociados presentes.`,
+      40: `Las Asambleas Generales serán presididas por el presidente o Vicepresidente del Consejo de Administración, asistidos por el secretario del mismo. Pero en aquellos casos en que no puedan hacerlo porque fueren parte interesada o afectada en asuntos a tratar, se elegirá una junta de debates integrada por un presidente, un secretario y un vocal, quienes dirigirán la Asamblea hasta resolver el asunto tratado.`,
+      41: `Cuando el asunto que se trate en una Asamblea afecte personalmente a un miembro de cualesquiera de los órganos de la Cooperativa o a un asociado, éste podrá participar en las deliberaciones, pero no en la votación para la resolución.`,
+      42: `La Asamblea General podrá revocar por mayoría de votos, cualquier decisión tomada por algún órgano de la cooperativa, cuando considere que esta es contraria a los intereses de esta.`,
+      43: `Cuando por insuficiencia de tiempo o cualquier otro motivo, una Asamblea no pueda finalizar en un mismo día, podrá continuar en otro u otros días, sin necesidad de nueva convocatoria.`,
+      44: `Son atribuciones de la Asamblea General en sus sesiones ordinarias: Conocer y resolver los asuntos inherentes a la Administración de la Cooperativa, de acuerdo con los informes que sean presentados por los otros órganos de esta; Acordar el pago de aportaciones adicionales para fines determinados y establecer el valor, plazo de redención y la tasa de interés que devengarán las mismas, así como el pago de contribuciones ordinarias y extraordinarias para fines específicos que se establecen en estos estatutos; Conocer sobre las reclamaciones de los asociados contra, actos, decisiones o actuaciones de los órganos de la cooperativa, que afecten sus derechos e intereses dentro de la misma; Conocer y resolver sobre las apelaciones presentadas por los asociados en los casos de expulsión de la cooperativa; Autorizar al Consejo de Administración el cobro de la comisión, porcentaje o contribución que le corresponda al asociado para cubrir los gastos de operación y administración, según lo establecido en el artículo 14º. De estos estatutos; Dictar políticas de capitalización y ampliación de los servicios de la cooperativa; Autorizar la enajenación de los bienes inmuebles de la cooperativa; Conocer y aprobar los contratos de compraventa y préstamos que la cooperativa celebre con terceras personas cuando estos excedan el cincuenta por ciento (50%) de su patrimonio; Conocer y aprobar la creación de agencias o sucursales que la cooperativa decida establecer; Aprobar los cambios en el valor de las cuotas de ingreso de los asociados; Conocer y aprobar los reglamentos de régimen interno elaborados por el Consejo de Administración; y, Adoptar acuerdos sobre cualquier asunto importante que beneficie o perjudique los intereses de la cooperativa.`,
+      45: `La Asamblea general en sus sesiones extraordinarias tratará cualesquiera de los asuntos siguientes: Modificación de los estatutos; Sanción y remoción, previa comprobación de causa, de los integrantes del Consejo de Administración, Comisión de Vigilancia, Comité de Educación y otros comités creados para el buen funcionamiento de la cooperativa; Acordar la fusión e incorporación de la cooperativa a otras de igual finalidad; Acordar la afiliación de la cooperativa a organizaciones cooperativas de grado superior, así como elegir y remover a las personas delegadas ante estas entidades; y, Conocer las causas de la disolución de la Cooperativa y acordarla cuando procediere, así como elegir a tres (3) representantes de la cooperativa que integran la comisión liquidadora.`,
+      46: `Para ser electo como integrante de cualquiera de los órganos de la cooperativa o nombrado para llenar vacantes, se requiere: Ser asociado de la Cooperativa y estar cumpliendo con las obligaciones contraídas con la misma; Haber demostrado en la práctica su interés por la administración y los servicios que presta la Cooperativa; y No estar comprendidos en los casos de excepciones señalados en artículo 47º. Y 54º. De estos estatutos.`,
+      47: `Entre las personas integrantes de los órganos de la cooperativa no deberá existir parentesco dentro del cuarto grado de consanguinidad y ni segundo de afinidad, tampoco deberá existir tal relación con el administrador o gerente.`,
+      48: `Para constituir quorum en las reuniones de los órganos de la cooperativa, se necesita por lo menos la asistencia de la mayoría relativa de sus integrantes. De su deliberaciones y acuerdos se dejará constancia en acta, la cual deberá ser firmada por los asistentes.`,
+      49: `Cuando un integrante de alguno de los órganos de la cooperativa, sin causa justificada no asista tres (3) reuniones consecutivas o no desempeñe las funciones que se le hayan asignado durante ese período, el órgano de que se trate podrá declarar vacante su puesto, el cual será cubierto en la forma que indica el artículo siguiente.`,
+      50: `Cualquier puesto vacante en el Consejo de Administración o Comisión de Vigilancia, será cubierto por el asociado idóneo que designen los mismos órganos, quien desempeñará sus funciones por el tiempo que faltare a la persona sustituida. Puede ésta persona en todo caso, ser electa para un período completo en la Asamblea General Ordinaria. En los demás órganos, el Consejo de Administración nombrará a los asociados que ocuparán los puestos vacantes existentes, entre una terna que propondrá el órgano afectado.`,
+      51: `Los integrantes de los órganos de la Cooperativa desempeñarán sus cargos en forma adhonorem, pero la Asamblea General podrá disponer de dietas por asistencia a las sesiones, cuando lo considere justificado y las condiciones económicas de la cooperativa lo permitan.`,
+      52: `Ningún asociado podrá actuar como integrante del Consejo de Administración, Comisión de Vigilancia y comités, y ser al mismo tiempo personal contratado de la cooperativa.`,
+      53: `Los asociados podrán solicitar la destitución de cualesquiera de los integrantes de los órganos de la cooperativa con el apoyo de por lo menos el veinte por ciento (20%) del total de los asociados activos, siempre que llenen los requisitos siguientes: a) presentar una solicitud escrita al presidente o secretario del Consejo de Administración; y, b) acompañar a la solicitud la debida formulación de cargos, firmada por los peticionarios. El Consejo de Administración deberá convocar a una Asamblea General Extraordinaria para considerar el caso, pero previamente notificará a los afectados. Tanto a estas personas como a las que formulen los cargos y demás asociados, se le hará saber el lugar, día y hora en que se efectuará la Asamblea General, la que por mayoría de votos de los presentes podrá destituir o mantener en su puesto a las personas en roles directivos involucrados.`,
+      54: `Los integrantes de los órganos de la cooperativa, deben ser personas totalmente solventes y sus obligaciones con la cooperativa deberán mantenerse al día; no podrán desempeñar tales cargos quienes estén comprendidos en cualquiera de los siguientes casos: Quienes hubieren sido condenados por el delito que implique falta de probidad; y, Las personas deudoras reconocidas legalmente morosas.`,
+      55: `El Consejo de Administración es el órgano administrativo de la cooperativa. La representación legal de la cooperativa la ejerce el Presidente del Consejo de Administración, quien podrá delegarla en cualquier persona integrante del mismo o en el Gerente, previa autorización de este órgano, lo cual deberá constar en acta.`,
+      56: `El Consejo de Administración estará integrado por cinco miembros (5) electos en la primera Asamblea General Ordinaria, de los cuales dos (2) desempeñarán sus cargos por un (1) año y los otros tres (3) lo harán por dos (2) años. Esta decisión se tomará con base en un sorteo que se efectuará en la primera sesión que el Consejo celebre, lo cual debe hacerse constar en acta. En la siguiente Asamblea General Ordinaria Obligatoria únicamente serán electos dos (2) miembros para un período normal de dos (2) años, y en la próxima Asamblea General Ordinaria Obligatoria, serán electos tres (3) para un período normal de dos (2) años, y así sucesivamente para garantizar la alternabilidad en el ejercicio de los cargos directivos. En ambos casos dichos miembros sólo podrán ser reelectos para otro período normal de dos (2) años. Cuando el Consejo de Administración no sea electo por cargos, en la primera sesión que celebre, elegirá entre sus miembros un Presidente, un Vicepresidente, un secretario, un Tesorero y un Vocal. Este último suplirá a los/as titulares de los tres primeros cargos en caso de ausencia temporal. El Consejo de Administración debe ser inclusivo, asegurando una participación equitativa de mujeres, hombres y personas jóvenes, reflejando la diversidad y fomentando la igualdad de género.`,
+      57: `El Consejo de Administración se reunirá una vez al mes, sin embargo, cuando las actividades de la cooperativa lo requieran, se reunirán tantas veces como sea necesario; las resoluciones del Consejo de Administración se tomarán por mayoría de votos de las personas asistentes, y si se suscitara un empate, quien presida la sesión tendrá doble voto, las reuniones serán convocadas por el Presidente o por quien haga sus veces.`,
+      58: `Los integrantes del Consejo de Administración tomarán posesión de sus cargos en el momento de ser electos, y dentro de los ocho (8) días hábiles siguientes recibirán formalmente los bienes, registro y documentos de la cooperativa. Para el efecto se realizarán las verificaciones correspondientes y se hará constar en el acta el resultado obtenido.`,
+      59: `Todo acto de los integrantes del Consejo de Administración que contravengan las disposiciones legales, los estatutos y reglamentos que perjudiquen moral o materialmente a la cooperativa, lo hará incurrir en responsabilidad para con la cooperativa y para con terceras personas por los daños y perjuicios que con ello hubieren causado. La responsabilidad solidaria la comparten los integrantes de la Comisión de Vigilancia, cuando no hubieren objetado los actos oportunamente. Quedan eximidas de responsabilidad las personas con roles directivos que razonen su voto en el acto de tomar la decisión respectiva, lo cual deberá constar en acta.`,
+      60: `Son atribuciones del Consejo de Administración: Cumplir con las disposiciones contempladas en la Ley General de Cooperativas y su Reglamento, así como cumplir y hacer que se cumplan estos estatutos, los reglamentos de régimen interno aprobados por la Asamblea General y demás disposiciones emanadas en este orden; Convocar a Asambleas Generales Ordinarias y Extraordinarias; Ejercer la representación legal de la cooperativa a través del Presidente, pudiendo esta persona delegarla en cualquiera de las personas integrantes del Consejo o en el Gerente previa autorización del mismo Consejo lo cual deberá constar en acta; Elaborar los proyectos de reglamentos de régimen interno que fueren necesarios para someterlos a la consideración y aprobación de la Asamblea General; Someter a la consideración y aprobación de la Asamblea General el informe sobre la situación económica y financiera de la cooperativa, previo dictamen de la Comisión de Vigilancia... Nombrar, amonestar y remover al Gerente... Resolver sobre la admisión, amonestación, suspensión y expulsión de los asociados; Administrar los recursos de la cooperativa... Celebrar los contratos de compraventa y prestamos cuyo monto no sea mayor del cincuenta por ciento (50%) del patrimonio de la cooperativa... (Ver texto íntegro en el panel al hacer clic).`,
+      61: `La Comisión de Vigilancia es el órgano encargado del control y fiscalización de la cooperativa. Esta estará integrada por tres (3) personas integrantes electas en Asamblea General Ordinaria y la duración de su mandato será de un año; pudiendo ser reelectas únicamente para un período más.`,
+      62: `La Comisión de Vigilancia, cuando no sea electa por cargos en su primera sesión elegirá entre sus integrantes: Un Presidente, un Secretario y un Vocal.`,
+      63: `Son atribuciones de la Comisión de Vigilancia: Velar por que las actividades administrativas y económico-financieras de la cooperativa, se realicen con eficiencia y eficacia; Examinar las operaciones realizadas por la cooperativa, por lo menos una vez cada tres (3) meses y presentar los informes correspondientes a la Asamblea General; Practicar corte de caja y arqueo de valores, por lo menos una vez al mes; Revisar y firmar en el dorso, cada uno de los documentos relativos a ingresos y egresos mensuales... Emitir dictamen sobre los informes y documentos de tipo contable que el Consejo de Administración deba someter a la consideración de la Asamblea General Ordinaria... Vigilar que las personas funcionarias y personal de la cooperativa cumplan con sus funciones... Solicitar al Consejo de Administración que convoque a Asambleas Generales, o convocarlas directamente si este órgano se negare a hacerlo... Solicitar al Consejo de Administración la contratación de servicios profesionales para la realización de auditoría... Proponer a la Asamblea General la separación o expulsión de integrantes del Consejo de Administración y comités... Presentar a la Asamblea General Ordinaria un informe de las actividades desarrolladas durante el año... Determinar los procedimientos mediante los cuales los asociados puedan hacer uso del derecho a revisar libros y documentos de la cooperativa... Velar por los derechos, intereses y cumplimiento de las obligaciones de los asociados...`,
+      64: `El comité de educación estará integrado por tres (3) personas integrantes electas en Asamblea General Ordinaria. La duración será de dos (2) años y pueden ser reelectas por un período más.`,
+      65: `Cuando los integrantes del Comité de Educación no sean electas por cargos, en su primera sesión elegirán entre sus integrantes, un Presidente, un Secretario y un Vocal.`,
+      66: `Son atribuciones del Comité de Educación: Establecer programas de educación cooperativa y elaborar el material correspondiente, para los asociados y personas que deseen ingresar a la cooperativa; Organizar cursos, conferencias, mesas redondas, seminarios y otros eventos sobre el cooperativismo, así como aspectos relativos a la actividad principal de la cooperativa; Gestionar el establecimiento de unidades educativas dentro de la estructura de la cooperativa; para facilitar la ejecución de programas de carácter educativo, como cultural y recreativo, para asociados y sus familias; Divulgar entre los asociados de la cooperativa e integrantes de la comunidad las actividades que serán desarrolladas y los eventos ya realizados; Presentar al Consejo de Administración el informe de las actividades desarrolladas durante el año, a efecto de incluirlo en el informe general que este rendirá a la Asamblea General Ordinaria; Coordinar con el Consejo de Administración y Comités, cualquier actividad educativa o cultural en beneficio de los asociados y comunidad donde opera la cooperativa; Elaborar anualmente un plan de trabajo y un presupuesto de gastos en cumplimiento de sus atribuciones, el cual someterá a la aprobación del Consejo de Administración para su inclusión en el presupuesto general que se presentará a la Asamblea General Ordinaria; Otras que sean de su competencia.`,
+      67: `De acuerdo con las necesidades de la cooperativa y sus posibilidades económicas, el Consejo de Administración podrá contratar los servicios de un Gerente. La persona que desempeñe dicho cargo no debe tener relación de parentesco dentro de los grados que la ley establece, con los integrantes del Consejo de Administración, Comisión de Vigilancia y personal de la cooperativa.`,
+      68: `El Gerente es la persona responsable del funcionamiento y ejecución del plan de trabajo de la cooperativa, tendrá a su cargo el control general de las operaciones y demás responsabilidades que le establezca el Consejo de Administración, de acuerdo con los estatutos, reglamentos y demás disposiciones de la cooperativa.`,
+      69: `Son atribuciones de la Gerencia: Administrar los recursos de la cooperativa, de acuerdo con normas dictadas por el Consejo de Administración; Asistir a todas las sesiones del Consejo de Administración con voz, pero sin voto; Informar al Consejo de Administración sobre el desarrollo de los programas de la cooperativa y sugerir cambios en los sistemas de trabajo; Elaborar y someter a consideración del Consejo de Administración el Plan de Trabajo y el Presupuesto General Anual de la Cooperativa; Someter a consideración del Consejo de Administración el nombramiento y remoción del personal bajos sus órdenes; Velar por el uso adecuado de las instalaciones, bienes, equipo y valores de la cooperativa, así como establecer los controles necesarios para el manejo eficiente de las operaciones realizadas con los asociados y terceros; Representar a la cooperativa en las comisiones que asigne el Consejo de Administración; Cobrar las sumas adeudadas a la cooperativa y efectuar los pagos correspondientes de acuerdo con las indicaciones del Consejo de Administración; Atender a los asociados sobre sus operaciones en la cooperativa.`,
+      70: `El ejercicio contable de la cooperativa será de un año, iniciándose el Uno de Enero para finalizar el Treinta y uno de diciembre de cada año; con excepción del primero, que se contará desde la fecha en que se inicien operaciones y finalizará en la fecha ya establecida para el cierre del ejercicio contable.`,
+      71: `Al finalizar el ejercicio contable, se levantará un inventario y se elaborará el balance general y estado de resultados.`,
+      72: `Dentro de los cuarenta (40) días, contados a partir del cierre del ejercicio contable, el Consejo de Administración pondrá a disposición de la Comisión de Vigilancia el informe indicado en el inciso e) del artículo 60º. De estos estatutos.`,
+      73: `De los excedentes totales de cada ejercicio, se harán las siguientes deducciones mínimas: Un diez por ciento (10%) para reserva irrepartible; Un diez por ciento (10%) para reserva de educación; Un diez por ciento (10%) para reserva de obras sociales; Un diez por ciento (10%) para reserva institucional; Un uno por ciento (1%) para reserva de medio ambiente; y, Otras que se consideren necesarias.`,
+      74: `Determinados los excedentes netos, el Consejo de Administración elaborará un proyecto de distribución de estos entre los asociados, el cual será presentado a la Asamblea General Ordinaria para su aprobación. La Asamblea podrá acordar no distribuir los excedentes y destinarlos para otros fines, si fuere necesario, en cualquier caso, la decisión se tomará con el voto afirmativo de por lo menos las dos terceras (2/3) partes de asociados presentes.`,
+      75: `Los excedentes o las pérdidas se distribuirán entre los asociados en proporción al monto de operaciones realizadas con la cooperativa o a la participación en las actividades de esta. Los excedentes correspondientes a asociados que no hayan pagado totalmente sus aportaciones, se acreditarán a su respectiva cuenta, hasta cubrir el valor total de las mismas.`,
+      76: `En caso de pérdida, la Asamblea General Ordinaria decidirá su compensación por cualquiera de las formas siguientes: La cancelación total de la pérdida por la reserva institucional si el monto de esta es igual o mayor que el de la pérdida; La cancelación parcial por la reserva institucional y el resto diferirlo dentro de los ejercicios contables siguientes, siempre que la parte diferida no sea mayor que el cincuenta por ciento (50%) del total de la pérdida, si hubiere pérdida el año siguiente, esta se cubrirá como lo establece el inciso c) o d) de este artículo; La cancelación del cincuenta por ciento (50%) de la pérdida por la reserva institucional y el resto mediante cuotas extraordinarias de los asociados, pagadas en la forma que la Asamblea General Acuerde; La cancelación del cien por ciento (100%) de la pérdida mediante cuotas extraordinarias de los asociados, pagadas en la forma que la propia Asamblea Acuerde. La Asamblea General Ordinaria tomara una decisión al respecto, conforme lo establecido en los incisos del presente artículo.`,
+      77: `La cooperativa se disolverá por cualquiera de las causas siguientes: Por disminución del número de asociados a menos de veinte (20); Por hacerse imposible el cumplimiento de los fines para los cuales se constituyó; Por voluntad de por lo menos las dos terceras partes (2/3) partes de los asociados reunidos en Asamblea General Extraordinaria convocada especialmente para tal efecto; Por pérdida de más del sesenta por ciento (60%) del total de aportaciones pagadas, siempre que esta situación sea irreparable; Por fusión e incorporación a otra cooperativa.`,
+      78: `Cuando la causal sea la contemplada en los incisos c) o e) del artículo anterior, el acuerdo deberá emitirse mediante acta en que consten las causas, firmada por los asociados presentes. La certificación de la misma deberá enviarse a INACOP dentro del término de diez (10) días.`,
+      79: `Cuando las causales sean las contempladas en los incisos a), b) y d) del artículo 77º. De estos estatutos y no se hubiere convocado a Asamblea General Extraordinaria para conocer sobre las mismas, la entidad fiscalizadora de las cooperativas efectuará la convocatoria y dará un plazo de seis (6) meses para corregirlas; de no lograrse, procederá a su disolución y liquidación. Cuando sea imposible la celebración de dicha Asamblea General, la disolución la resolverá la entidad fiscalizadora de las cooperativas, previa investigación que compruebe la existencia de cualesquiera de las causales señaladas.`,
+      80: `En los demás casos de disolución y liquidación en que no se procediere de oficio, se organizará una Comisión Liquidadora, formada por cinco (5) personas integrantes: de las cuales tres (3) serán electas por la cooperativa en Asamblea General, un (1) representante del INACOP quien la presidirá y uno (1) de la entidad estatal de fiscalización de cooperativas. Si la cooperativa en Asamblea General no designa a las personas integrantes de la comisión liquidadora en un término de quince (15) días contados a partir del requerimiento del INACOP, este procederá a nombrarlas.`,
+      81: `Las personas integrantes de la Comisión Liquidadora deberán inscribirse en el Registro de Cooperativas del INACOP, donde se extenderán las credenciales correspondientes; el Presidente de la Comisión Liquidadora tendrá la representación legal de la cooperativa y será depositaria del expediente respectivo durante el tiempo que ejerza su función.`,
+      82: `Dentro de los ocho (8) días siguientes a la inscripción de las personas integrantes de la Comisión Liquidadora, este órgano hará publicar en el Diario Oficial, en otro de mayor circulación, el aviso que la cooperativa entra en liquidación, para que las entidades acreedoras ejerzan su derecho del término de quince (15) días.`,
+      83: `Dentro de los treinta (30) días posteriores al plazo concedido a las entidades acreedoras, la Comisión Liquidadora presentará un proyecto de liquidación a la entidad fiscalizadora de las cooperativas para su estudio y aprobación. Autorizado dicho proyecto, la Comisión Liquidadora procederá a su ejecución.`,
+      84: `Los ingresos provenientes de la realización de los bienes de la cooperativa, se aplicarán para efectuar pagos en el orden siguiente: Acreedurías a terceros; Gastos de Liquidación; Reintegro a los asociados del valor de sus aportaciones, o a la parte proporcional que en caso de insuficiencia les correspondiera; y, El saldo final, si lo hubiera, se entregará a la federación a que pertenece o en su defecto, a la confederación.`,
+      85: `En caso de déficit, la Comisión Liquidadora solicitará a los asociados el pago correspondiente, en caso contrario, procederá conforme las leyes comunes.`,
+      86: `Los integrantes de los órganos de la cooperativa cesan en sus funciones al tomar posesión la Comisión Liquidadora, pero quedan obligados a prestar su colaboración y dar la información que se solicite. Todos los documentos y bienes de la cooperativa pasarán a control y manejo de la Comisión Liquidadora.`,
+      87: `Agotado el proceso de liquidación, la Comisión Liquidadora entregará a la entidad estatal de fiscalización de cooperativas, los libros de contabilidad, de actas y los demás registros y archivos que la cooperativa posea, y al INACOP el expediente que contiene la documentación a que se refieren los artículos del 24 al 33 del Reglamento de la Ley General de Cooperativas, acompañado del informe circunstanciado de su actuación, para los efectos de cancelación de la personalidad jurídica.`,
+      88: `Las tasas de interés en las operaciones activas y pasivas de la cooperativa serán fijadas por la Asamblea General Ordinaria a propuesta del Consejo de Administración.`,
+      89: `Las Reformas a estos estatutos deberán ser propuestos a la Asamblea General Extraordinaria, por el Consejo de Administración, con dictamen de la Comisión de Vigilancia para establecer si proceden las enmiendas. En todo caso, se decidirá por el voto favorable de por lo menos las dos terceras (2/3) partes de los asociados presentes en Asamblea General convocada expresamente para tal efecto.`,
+      90: `La cooperativa podrá realizar operaciones con terceros después de haber satisfecho las necesidades de los asociados, para lo cual deberá contar previamente con la autorización del INACOP. Los excedentes generados a través de estas operaciones pasarán a formar parte de la reserva irrepartible.`,
+      91: `No se permitirá tratar asuntos políticos y religiosos en el seno de la cooperativa, ni destinar fondos de esta, a campañas de esa índole u otros fines que no sean los propios de su desenvolvimiento socioeconómico.`,
+      92: `Los casos no previstos en estos estatutos serán resueltos de conformidad con la legislación correspondiente, previa consulta al INACOP.`
+    };
+
+    const detailedData = {
+      'node-entidad': {
+        name: 'Cooperativa AtiTur (Estructura y Disolución)',
+        subnodes: [
+          { id: 'sub-legal', title: 'PRINCIPIOS Y FINES', desc: 'Art. 1 - 8', color: '#475569', stroke: '#94a3b8', x: 850, y: 530, marker: 'url(#arrow)', articles: [1 , 2, 3, 4, 5, 6, 7, 8] },
+          { id: 'sub-economicos', title: 'MEDIOS ECONÓMICOS', desc: 'Art. 9 - 15', color: '#0369a1', stroke: '#38bdf8', x: 50, y: 530, marker: 'url(#arrow-blue)', articles: [9, 10, 11, 12, 13, 14, 15] },
+          { id: 'sub-contables', title: 'EJERCICIO CONTABLE', desc: 'Art. 70 - 76', color: '#15803d', stroke: '#4ade80', x: 850, y: 620, marker: 'url(#arrow-green)', articles: [70, 71, 72, 73, 74, 75, 76] },
+          { id: 'sub-disolucion', title: 'DISOLUCIÓN Y FINALES', desc: 'Art. 77 - 92', color: '#be123c', stroke: '#fb7185', x: 50, y: 620, marker: 'url(#arrow-red)', articles: [77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92] }
+        ]
+      },
+      'node-asociados': {
+        name: 'Personas Asociadas (Base Social)',
+        subnodes: [
+          { id: 'sub-ingreso', title: 'INGRESO Y DERECHOS', desc: 'Art. 16 - 22', color: '#0284c7', stroke: '#38bdf8', x: 50, y: 460, marker: 'url(#arrow-blue)', articles: [16, 17, 18, 19, 20, 21, 22] },
+          { id: 'sub-retiro', title: 'RETIRO Y LIQUIDACIÓN', desc: 'Art. 23 - 29', color: '#d97706', stroke: '#fbbf24', x: 850, y: 460, marker: 'url(#arrow-yellow)', articles: [23, 24, 25, 26, 27, 28, 29] },
+          { id: 'sub-sanciones', title: 'SANCIONES Y EXPULSIÓN', desc: 'Art. 30 - 33', color: '#be123c', stroke: '#fb7185', x: 450, y: 550, marker: 'url(#arrow-red)', articles: [30, 31, 32, 33] }
+        ]
+      },
+      'node-asamblea': {
+        name: 'Asamblea General',
+        subnodes: [
+          { id: 'sub-asamblea-1', title: 'INTEGRACIÓN Y QUÓRUM', desc: 'Art. 34 - 43', color: '#0369a1', stroke: '#38bdf8', x: 200, y: 20, marker: 'url(#arrow-blue)', articles: [34, 35, 36, 37, 38, 39, 40, 41, 42, 43] },
+          { id: 'sub-asamblea-2', title: 'ATRIBUCIONES', desc: 'Art. 44 - 45', color: '#0f766e', stroke: '#2dd4bf', x: 850, y: 20, marker: 'url(#arrow-green)', articles: [44, 45] }
+        ]
+      },
+      'node-consejo': {
+        name: 'Consejo de Administración',
+        subnodes: [
+          { id: 'sub-consejo-1', title: 'DIRECTIVOS Y DEBERES', desc: 'Art. 46 - 59', color: '#15803d', stroke: '#4ade80', x: 50, y: 220, marker: 'url(#arrow-green)', articles: [46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59] },
+          { id: 'sub-consejo-2', title: 'ATRIBUCIONES', desc: 'Art. 60', color: '#475569', stroke: '#94a3b8', x: 50, y: 320, marker: 'url(#arrow)', articles: [60] }
+        ]
+      },
+      'node-vigilancia': {
+        name: 'Comisión de Vigilancia',
+        subnodes: [
+          { id: 'sub-vigilancia-1', title: 'CONTROL Y FISCALIZACIÓN', desc: 'Art. 61 - 63', color: '#c2410c', stroke: '#fb923c', x: 850, y: 220, marker: 'url(#arrow-red)', articles: [61, 62, 63] }
+        ]
+      },
+      'node-educacion': {
+        name: 'Comité de Educación',
+        subnodes: [
+          { id: 'sub-educacion-1', title: 'EDUCACIÓN COOPERATIVA', desc: 'Art. 64 - 66', color: '#0f766e', stroke: '#2dd4bf', x: 250, y: 220, marker: 'url(#arrow-green)', articles: [64, 65, 66] }
+        ]
+      },
+      'node-gerencia': {
+        name: 'Gerencia General',
+        subnodes: [
+          { id: 'sub-gerencia-1', title: 'ADMINISTRACIÓN OPERATIVA', desc: 'Art. 67 - 69', color: '#6d28d9', stroke: '#a78bfa', x: 700, y: 350, marker: 'url(#arrow)', articles: [67, 68, 69] }
+        ]
+      }
+    };
+
+    const chapters = [
+      { title: 'Cap. I: Denominación y Principios', start: 1, end: 3 },
+      { title: 'Cap. II: Objeto Social y Objetivos', start: 4, end: 6 },
+      { title: 'Cap. III: Duración y Responsabilidad', start: 7, end: 8 },
+      { title: 'Cap. IV: Medios Económicos', start: 9, end: 15 },
+      { title: 'Cap. V: De los Asociados', start: 16, end: 33 },
+      { title: 'Cap. VI: Asamblea General', start: 34, end: 45 },
+      { title: 'Cap. VI: Consejo y Directivos', start: 46, end: 60 },
+      { title: 'Cap. VI: Comisión de Vigilancia', start: 61, end: 63 },
+      { title: 'Cap. VI: Comité de Educación', start: 64, end: 66 },
+      { title: 'Cap. VII: De la Gerencia', start: 67, end: 69 },
+      { title: 'Cap. VIII: Ejercicio Contable', start: 70, end: 76 },
+      { title: 'Cap. IX: Disolución y Liquidación', start: 77, end: 87 },
+      { title: 'Cap. X: Disposiciones Finales', start: 88, end: 92 }
+    ];
+
+    function renderSidebar() {
+      const container = document.getElementById('chapterContainer');
+      container.innerHTML = '';
+      chapters.forEach(chap => {
+        const group = document.createElement('div');
+        group.className = 'chapter-group';
+        const title = document.createElement('div');
+        title.className = 'chapter-title';
+        title.innerText = chap.title;
+        group.appendChild(title);
+        for (let i = chap.start; i <= chap.end; i++) {
+          const item = document.createElement('div');
+          item.className = 'article-item';
+          item.id = `art-item-${i}`;
+          item.innerText = `Artículo ${i}º`;
+          item.onclick = (e) => { e.stopPropagation(); selectArticle(i); };
+          group.appendChild(item);
+        }
+        container.appendChild(group);
+      });
+    }
+
+    function toggleCategoryNode(nodeId) {
+      if (currentlyExpandedNode === nodeId) {
+        closeAll();
+        currentlyExpandedNode = null;
+        return;
+      }
+      currentlyExpandedNode = nodeId;
+      renderSubcategories(nodeId);
+    }
+
+    function renderSubcategories(nodeId) {
+      document.querySelectorAll('.node').forEach(node => {
+        node.classList.remove('active-node', 'dimmed');
+        if (node.id === nodeId) node.classList.add('active-node');
+        else node.classList.add('dimmed');
+      });
+
+      clearDynamicLayers();
+      const breakdown = detailedData[nodeId];
+      if (!breakdown) return;
+
+      const parentRect = document.querySelector(`#${nodeId} rect`);
+      const pX = parseFloat(parentRect.getAttribute('x')) + parseFloat(parentRect.getAttribute('width')) / 2;
+      const pY = parseFloat(parentRect.getAttribute('y')) + parseFloat(parentRect.getAttribute('height')) / 2;
+
+      const linksG = document.getElementById('dynamicLinks');
+      const subnodesG = document.getElementById('dynamicSubnodes');
+
+      breakdown.subnodes.forEach(sub => {
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('class', 'sublink');
+        path.setAttribute('d', `M ${pX},${pY} Q ${(pX + sub.x) / 2},${(pY + sub.y) / 2} ${sub.x + 100},${sub.y + 22}`);
+        path.setAttribute('stroke', sub.stroke);
+        path.setAttribute('marker-end', sub.marker);
+        linksG.appendChild(path);
+
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'subnode');
+        g.setAttribute('onclick', `toggleArticles('${nodeId}', '${sub.id}')`);
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', sub.x); rect.setAttribute('y', sub.y);
+        rect.setAttribute('width', 200); rect.setAttribute('height', 45);
+        rect.setAttribute('fill', sub.color); rect.setAttribute('stroke', sub.stroke);
+
+        const textTitle = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        textTitle.setAttribute('x', sub.x + 100); textTitle.setAttribute('y', sub.y + 18);
+        textTitle.setAttribute('text-anchor', 'middle'); textTitle.setAttribute('class', 'sub-title');
+        textTitle.textContent = sub.title;
+
+        const textDesc = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        textDesc.setAttribute('x', sub.x + 100); textDesc.setAttribute('y', sub.y + 33);
+        textDesc.setAttribute('text-anchor', 'middle'); textDesc.setAttribute('class', 'sub-desc');
+        textDesc.textContent = sub.desc;
+
+        g.appendChild(rect); g.appendChild(textTitle); g.appendChild(textDesc);
+        subnodesG.appendChild(g);
+      });
+
+      if(breakdown.subnodes.length > 0) {
+        toggleArticles(nodeId, breakdown.subnodes[0].id);
+      }
+    }
+
+    function toggleArticles(nodeId, subId) {
+      const artG = document.getElementById('dynamicArtNodes');
+      const artLinksG = document.getElementById('dynamicArtLinks');
+      artG.innerHTML = '';
+      artLinksG.innerHTML = '';
+
+      const breakdown = detailedData[nodeId];
+      if (!breakdown) return;
+      const sub = breakdown.subnodes.find(s => s.id === subId);
+      if (!sub || !sub.articles) return;
+
+      const isLeft = sub.x > 600; // Si está a la derecha, los chips van a la izquierda
+      const chipW = 50, chipH = 20, gap = 5;
+      const cols = Math.min(sub.articles.length, 4); // Máximo 4 columnas
+      
+      const gridStartX = isLeft ? sub.x - (cols * (chipW + gap)) - 10 : sub.x + 210;
+      const gridStartY = sub.y - 10;
+
+      const link = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      link.setAttribute('class', 'artlink');
+      link.setAttribute('stroke', sub.stroke);
+      const linkX1 = isLeft ? sub.x : sub.x + 200;
+      const linkX2 = isLeft ? gridStartX + (cols * (chipW + gap)) : gridStartX;
+      link.setAttribute('d', `M ${linkX1},${sub.y + 22} L ${linkX2},${gridStartY + 10}`);
+      artLinksG.appendChild(link);
+
+      sub.articles.forEach((artNum, index) => {
+        const col = index % cols;
+        const row = Math.floor(index / cols);
+        const x = gridStartX + (col * (chipW + gap));
+        const y = gridStartY + (row * (chipH + gap));
+
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'art-chip');
+        g.setAttribute('onclick', `showArticleText(${artNum})`);
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', x); rect.setAttribute('y', y);
+        rect.setAttribute('width', chipW); rect.setAttribute('height', chipH);
+        rect.setAttribute('fill', '#090d16'); rect.setAttribute('stroke', sub.stroke);
+
+        const title = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        title.setAttribute('x', x + chipW / 2); title.setAttribute('y', y + 14);
+        title.setAttribute('text-anchor', 'middle'); title.setAttribute('class', 'art-body');
+        title.textContent = `Art. ${artNum}º`;
+
+        g.appendChild(rect); g.appendChild(title);
+        artG.appendChild(g);
+      });
+
+      document.getElementById('panelTitle').innerText = `${sub.title} (${sub.desc})`;
+      document.getElementById('panelRelation').innerText = `${sub.articles.length} Artículos`;
+      document.getElementById('panelText').innerText = `Haz clic en uno de los chips (Art. Xº) desplegados en el organigrama para leer su texto completo aquí.`;
+    }
+
+    function showArticleText(num) {
+      document.querySelectorAll('.article-item').forEach(el => el.classList.remove('active'));
+      const activeEl = document.getElementById(`art-item-${num}`);
+      if (activeEl) activeEl.classList.add('active');
+
+      const text = articlesDB[num] || "Texto no encontrado.";
+      document.getElementById('panelTitle').innerText = `Texto Completo: Artículo ${num}º`;
+      document.getElementById('panelRelation').innerText = 'Vista Literal';
+      document.getElementById('panelText').innerText = text;
+    }
+
+    function clearDynamicLayers() {
+      document.getElementById('dynamicLinks').innerHTML = '';
+      document.getElementById('dynamicSubnodes').innerHTML = '';
+      document.getElementById('dynamicArtNodes').innerHTML = '';
+      document.getElementById('dynamicArtLinks').innerHTML = '';
+    }
+
+    function closeAll() {
+      document.querySelectorAll('.node').forEach(node => node.classList.remove('active-node', 'dimmed'));
+      clearDynamicLayers();
+      document.getElementById('panelTitle').innerText = 'Analizador de Estatutos';
+      document.getElementById('panelRelation').innerText = 'AtiTur, R.L.';
+      document.getElementById('panelText').innerText = 'Haz clic en la lista lateral o en los nodos del organigrama para desplegar los artículos.';
+    }
+
+    function selectArticle(num) {
+      showArticleText(num); // Muestra el texto inmediatamente
+      
+      let nodeId = null, subId = null;
+      for(const nId in detailedData) {
+        for(const sub of detailedData[nId].subnodes) {
+          if(sub.articles.includes(num)) {
+            nodeId = nId; subId = sub.id; break;
+          }
+        }
+        if(nodeId) break;
+      }
+      
+      if (nodeId) {
+        if(currentlyExpandedNode !== nodeId) {
+            toggleCategoryNode(nodeId);
+        }
+        // Pequeño retraso para asegurar que el DOM esté listo
+        setTimeout(() => {
+            toggleArticles(nodeId, subId);
+        }, 50);
+      }
+    }
+
+    function filterArticles(val) {
+      const query = val.toLowerCase();
+      document.querySelectorAll('.article-item').forEach(el => {
+        el.style.display = el.innerText.toLowerCase().includes(query) ? 'block' : 'none';
+      });
+    }
+
+    renderSidebar();
+  </script>
+</body>
+</html>
