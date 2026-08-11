@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Estatutos AtiTur, R.L. - Texto Completo 92 Artículos</title>
+  <title>Estatutos AtiTur, R.L. - Buscador y Texto Completo</title>
   <style>
     :root {
       --bg-color: #0f172a;
@@ -29,6 +29,9 @@
       padding: 0.8rem 1.5rem;
       border-bottom: 1px solid var(--border-color);
       z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     header h1 { font-size: 1.15rem; font-weight: 600; color: #38bdf8; }
@@ -116,13 +119,69 @@
       overflow: hidden;
     }
 
+    /* Buscador Superior Flotante */
+    .top-search-wrapper {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      z-index: 20;
+      width: 320px;
+    }
+
+    .top-search-input {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      background-color: rgba(30, 41, 59, 0.95);
+      border: 1px solid var(--border-color);
+      color: white;
+      border-radius: 8px;
+      outline: none;
+      font-size: 0.9rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+
+    .top-search-input:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.3);
+    }
+
+    .search-results-dropdown {
+      background-color: rgba(15, 23, 42, 0.98);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      margin-top: 0.5rem;
+      max-height: 350px;
+      overflow-y: auto;
+      display: none;
+      box-shadow: 0 10px 15px rgba(0,0,0,0.5);
+    }
+
+    .search-result-item {
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid #334155;
+      cursor: pointer;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+    }
+
+    .search-result-item:last-child { border-bottom: none; }
+
+    .search-result-item:hover {
+      background-color: rgba(2, 132, 199, 0.2);
+      color: white;
+    }
+
+    .search-result-item b { color: #38bdf8; font-size: 0.85rem; }
+    .search-result-item mark { background: #f59e0b; color: #000; padding: 0 2px; border-radius: 2px; }
+
     .svg-container {
       flex: 1;
       width: 100%;
-      overflow: auto; /* Permite scroll si el organigrama es muy grande */
+      overflow: auto;
       display: flex;
       justify-content: center;
       align-items: flex-start;
+      padding-top: 1rem;
     }
 
     svg {
@@ -134,7 +193,6 @@
 
     .node { cursor: pointer; transition: all 0.3s ease; }
     .node rect { rx: 8px; ry: 8px; stroke-width: 2px; transition: all 0.3s ease; }
-
     .node.dimmed { opacity: 0.15; filter: grayscale(100%); }
 
     .node.active-node rect {
@@ -143,7 +201,6 @@
       filter: drop-shadow(0 0 16px rgba(245, 158, 11, 0.9));
     }
 
-    /* Sub-nodos Dinámicos */
     .subnode {
       cursor: pointer;
       opacity: 0;
@@ -151,42 +208,22 @@
       animation: fadeIn 0.3s forwards ease-out;
     }
 
-    .subnode rect {
-      rx: 6px; ry: 6px; stroke-width: 2px;
-      filter: drop-shadow(0 0 10px rgba(0,0,0,0.6));
-    }
-
+    .subnode rect { rx: 6px; ry: 6px; stroke-width: 2px; filter: drop-shadow(0 0 10px rgba(0,0,0,0.6)); }
     .subnode text.sub-title { font-size: 11px; font-weight: bold; fill: #ffffff; pointer-events: none; }
     .subnode text.sub-desc { font-size: 8.5px; fill: #cbd5e1; pointer-events: none; }
 
-    /* Nodos Hijos de Artículos (Chips) */
     .art-chip {
       cursor: pointer;
       opacity: 0;
       animation: fadeIn 0.3s forwards ease-out;
     }
-    .art-chip rect {
-      rx: 4px; ry: 4px;
-      fill: #090d16;
-      stroke-width: 1.5px;
-      transition: all 0.2s;
-    }
-    .art-chip:hover rect {
-      fill: #1e293b;
-      stroke: #ffffff !important;
-      stroke-width: 2.5px;
-    }
+    .art-chip rect { rx: 4px; ry: 4px; fill: #090d16; stroke-width: 1.5px; transition: all 0.2s; }
+    .art-chip:hover rect { fill: #1e293b; stroke: #ffffff !important; stroke-width: 2.5px; }
     .art-chip text { font-size: 9px; font-weight: bold; fill: #f8fafc; pointer-events: none; }
 
-    @keyframes fadeIn {
-      to { opacity: 1; transform: scale(1); }
-    }
+    @keyframes fadeIn { to { opacity: 1; transform: scale(1); } }
 
-    .link, .sublink, .artlink {
-      fill: none;
-      stroke-dasharray: 4 4;
-      opacity: 0.6;
-    }
+    .link, .sublink, .artlink { fill: none; stroke-dasharray: 4 4; opacity: 0.6; }
     .link { stroke: #475569; stroke-width: 1.5px; }
     .sublink { stroke-width: 2px; }
     .artlink { stroke-width: 1px; opacity: 0.3; }
@@ -194,7 +231,6 @@
     .node text.title { font-size: 12px; font-weight: bold; fill: #ffffff; pointer-events: none; }
     .node text.subtitle { font-size: 9.5px; fill: #cbd5e1; pointer-events: none; }
 
-    /* Panel Informativo */
     .info-panel {
       background: rgba(15, 23, 42, 0.98);
       border: 1px solid var(--border-color);
@@ -206,6 +242,7 @@
       display: flex;
       flex-direction: column;
       box-shadow: 0 -10px 20px rgba(0,0,0,0.3);
+      z-index: 5;
     }
 
     .info-panel-header {
@@ -220,73 +257,60 @@
     .info-panel-title { font-size: 1.1rem; font-weight: bold; color: #38bdf8; }
     .info-panel-relation { font-size: 0.8rem; background: #0284c7; color: white; padding: 4px 10px; border-radius: 10px; }
     
-    .info-panel-body {
-      overflow-y: auto;
-      flex: 1;
-      padding-right: 10px;
-    }
-
+    .info-panel-body { overflow-y: auto; flex: 1; padding-right: 10px; }
     .info-panel-text { font-size: 0.9rem; line-height: 1.6; color: #e2e8f0; text-align: justify; white-space: pre-wrap; }
 
-    .info-panel-body::-webkit-scrollbar { width: 6px; }
-    .info-panel-body::-webkit-scrollbar-track { background: #0f172a; }
-    .info-panel-body::-webkit-scrollbar-thumb { background: #38bdf8; border-radius: 3px; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #38bdf8; border-radius: 3px; }
   </style>
 </head>
 <body>
 
   <header>
     <div>
-      <h1>ESTATUTOS DE LA COOPERATIVA ATITUR, R.L. (92 ARTÍCULOS COMPLETOS)</h1>
-      <p>Haz clic en la lista lateral o en los nodos. Luego, haz clic en un número de artículo (chip) para leer su TEXTO COMPLETO abajo.</p>
+      <h1>ESTATUTOS DE LA COOPERATIVA ATITUR, R.L. (92 ARTÍCULOS)</h1>
+      <p>Busca cualquier palabra arriba a la derecha, o explora el organigrama haciendo clic en los nodos.</p>
     </div>
   </header>
 
   <div class="main-container">
     <div class="sidebar">
       <div class="sidebar-header">
-        <input type="text" class="search-box" placeholder="Buscar artículo..." onkeyup="filterArticles(this.value)">
+        <input type="text" class="search-box" placeholder="Buscar por número (ej. 16)..." onkeyup="filterArticles(this.value)">
       </div>
       <div class="chapter-list" id="chapterContainer"></div>
     </div>
 
     <div class="diagram-area">
+      <!-- Buscador Superior de Texto -->
+      <div class="top-search-wrapper">
+        <input type="text" class="top-search-input" id="topSearch" placeholder="🔎 Buscar palabra en los artículos..." oninput="searchFullText(this.value)" onfocus="this.select()">
+        <div class="search-results-dropdown" id="searchResultsDropdown"></div>
+      </div>
+
       <div class="svg-container">
         <svg viewBox="0 0 1200 700" id="mainSvg" preserveAspectRatio="xMidYMid meet">
           <defs>
-            <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-              <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b" />
-            </marker>
-            <marker id="arrow-blue" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-              <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8" />
-            </marker>
-            <marker id="arrow-green" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-              <path d="M 0 0 L 10 5 L 0 10 z" fill="#2dd4bf" />
-            </marker>
-            <marker id="arrow-red" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-              <path d="M 0 0 L 10 5 L 0 10 z" fill="#fb7185" />
-            </marker>
-            <marker id="arrow-yellow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-              <path d="M 0 0 L 10 5 L 0 10 z" fill="#fbbf24" />
-            </marker>
+            <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b" /></marker>
+            <marker id="arrow-blue" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8" /></marker>
+            <marker id="arrow-green" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#2dd4bf" /></marker>
+            <marker id="arrow-red" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#fb7185" /></marker>
+            <marker id="arrow-yellow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#fbbf24" /></marker>
           </defs>
 
-          <!-- Enlaces Estáticos Base -->
           <g id="baseLinks">
-            <!-- Asamblea central arriba -->
             <path class="link" d="M 600,60 L 200,130" marker-end="url(#arrow)"></path>
             <path class="link" d="M 600,60 L 550,130" marker-end="url(#arrow)"></path>
             <path class="link" d="M 600,60 L 900,130" marker-end="url(#arrow)"></path>
             <path class="link" d="M 550,180 L 600,250" marker-end="url(#arrow)"></path>
             <path class="link" d="M 600,300 L 600,360" marker-end="url(#arrow)"></path>
-            <path class="link" d="M 600,60 L 600,430" marker-end="url(#arrow)" stroke-dasharray="2 4"></path> <!-- Link a AtiTur -->
+            <path class="link" d="M 600,60 L 600,430" marker-end="url(#arrow)" stroke-dasharray="2 4"></path>
           </g>
 
-          <!-- Capas Dinámicas -->
           <g id="dynamicLinks"></g>
           <g id="dynamicArtLinks"></g>
 
-          <!-- Nodos Principales -->
           <g id="mainNodes">
             <g id="node-asamblea" class="node" onclick="toggleCategoryNode('node-asamblea')">
               <rect x="500" y="10" width="200" height="50" fill="#0369a1" stroke="#38bdf8"/>
@@ -343,7 +367,7 @@
         </div>
         <div class="info-panel-body">
           <div class="info-panel-text" id="panelText">
-            Bienvenido. Haz clic en la lista lateral o en los nodos del organigrama para desplegar los artículos. Luego, haz clic sobre el número de artículo (ej. Art. 16º) para leer su texto completo y literal aquí.
+            Bienvenido. Escribe una palabra en la caja de búsqueda superior derecha (ej. "préstamos", "expulsión", "reservas") para encontrar exactamente en qué artículo se menciona. También puedes hacer clic en los nodos del organigrama.
           </div>
         </div>
       </div>
@@ -406,12 +430,12 @@
       49: `Cuando un integrante de alguno de los órganos de la cooperativa, sin causa justificada no asista tres (3) reuniones consecutivas o no desempeñe las funciones que se le hayan asignado durante ese período, el órgano de que se trate podrá declarar vacante su puesto, el cual será cubierto en la forma que indica el artículo siguiente.`,
       50: `Cualquier puesto vacante en el Consejo de Administración o Comisión de Vigilancia, será cubierto por el asociado idóneo que designen los mismos órganos, quien desempeñará sus funciones por el tiempo que faltare a la persona sustituida. Puede ésta persona en todo caso, ser electa para un período completo en la Asamblea General Ordinaria. En los demás órganos, el Consejo de Administración nombrará a los asociados que ocuparán los puestos vacantes existentes, entre una terna que propondrá el órgano afectado.`,
       51: `Los integrantes de los órganos de la Cooperativa desempeñarán sus cargos en forma adhonorem, pero la Asamblea General podrá disponer de dietas por asistencia a las sesiones, cuando lo considere justificado y las condiciones económicas de la cooperativa lo permitan.`,
-      52: `Ningún asociado podrá actuar como integrante del Consejo de Administración, Comisión de Vigilancia y comités, y ser al mismo tiempo personal contratado de la cooperativa.`,
+      52: `Ninguno asociado podrá actuar como integrante del Consejo de Administración, Comisión de Vigilancia y comités, y ser al mismo tiempo personal contratado de la cooperativa.`,
       53: `Los asociados podrán solicitar la destitución de cualesquiera de los integrantes de los órganos de la cooperativa con el apoyo de por lo menos el veinte por ciento (20%) del total de los asociados activos, siempre que llenen los requisitos siguientes: a) presentar una solicitud escrita al presidente o secretario del Consejo de Administración; y, b) acompañar a la solicitud la debida formulación de cargos, firmada por los peticionarios. El Consejo de Administración deberá convocar a una Asamblea General Extraordinaria para considerar el caso, pero previamente notificará a los afectados. Tanto a estas personas como a las que formulen los cargos y demás asociados, se le hará saber el lugar, día y hora en que se efectuará la Asamblea General, la que por mayoría de votos de los presentes podrá destituir o mantener en su puesto a las personas en roles directivos involucrados.`,
       54: `Los integrantes de los órganos de la cooperativa, deben ser personas totalmente solventes y sus obligaciones con la cooperativa deberán mantenerse al día; no podrán desempeñar tales cargos quienes estén comprendidos en cualquiera de los siguientes casos: Quienes hubieren sido condenados por el delito que implique falta de probidad; y, Las personas deudoras reconocidas legalmente morosas.`,
       55: `El Consejo de Administración es el órgano administrativo de la cooperativa. La representación legal de la cooperativa la ejerce el Presidente del Consejo de Administración, quien podrá delegarla en cualquier persona integrante del mismo o en el Gerente, previa autorización de este órgano, lo cual deberá constar en acta.`,
       56: `El Consejo de Administración estará integrado por cinco miembros (5) electos en la primera Asamblea General Ordinaria, de los cuales dos (2) desempeñarán sus cargos por un (1) año y los otros tres (3) lo harán por dos (2) años. Esta decisión se tomará con base en un sorteo que se efectuará en la primera sesión que el Consejo celebre, lo cual debe hacerse constar en acta. En la siguiente Asamblea General Ordinaria Obligatoria únicamente serán electos dos (2) miembros para un período normal de dos (2) años, y en la próxima Asamblea General Ordinaria Obligatoria, serán electos tres (3) para un período normal de dos (2) años, y así sucesivamente para garantizar la alternabilidad en el ejercicio de los cargos directivos. En ambos casos dichos miembros sólo podrán ser reelectos para otro período normal de dos (2) años. Cuando el Consejo de Administración no sea electo por cargos, en la primera sesión que celebre, elegirá entre sus miembros un Presidente, un Vicepresidente, un secretario, un Tesorero y un Vocal. Este último suplirá a los/as titulares de los tres primeros cargos en caso de ausencia temporal. El Consejo de Administración debe ser inclusivo, asegurando una participación equitativa de mujeres, hombres y personas jóvenes, reflejando la diversidad y fomentando la igualdad de género.`,
-      57: `El Consejo de Administración se reunirá una vez al mes, sin embargo, cuando las actividades de la cooperativa lo requieran, se reunirán tantas veces como sea necesario; las resoluciones del Consejo de Administración se tomarán por mayoría de votos de las personas asistentes, y si se suscitara un empate, quien presida la sesión tendrá doble voto, las reuniones serán convocadas por el Presidente o por quien haga sus veces.`,
+      57: `El Consejo de Administración se reunirá una vez al mes, sin embargo, cuando las actividades de la cooperativa lo reqieran, se reunirán tantas veces como sea necesario; las resoluciones del Consejo de Administración se tomarán por mayoría de votos de las personas asistentes, y si se suscitara un empate, quien presida la sesión tendrá doble voto, las reuniones serán convocadas por el Presidente o por quien haga sus veces.`,
       58: `Los integrantes del Consejo de Administración tomarán posesión de sus cargos en el momento de ser electos, y dentro de los ocho (8) días hábiles siguientes recibirán formalmente los bienes, registro y documentos de la cooperativa. Para el efecto se realizarán las verificaciones correspondientes y se hará constar en el acta el resultado obtenido.`,
       59: `Todo acto de los integrantes del Consejo de Administración que contravengan las disposiciones legales, los estatutos y reglamentos que perjudiquen moral o materialmente a la cooperativa, lo hará incurrir en responsabilidad para con la cooperativa y para con terceras personas por los daños y perjuicios que con ello hubieren causado. La responsabilidad solidaria la comparten los integrantes de la Comisión de Vigilancia, cuando no hubieren objetado los actos oportunamente. Quedan eximidas de responsabilidad las personas con roles directivos que razonen su voto en el acto de tomar la decisión respectiva, lo cual deberá constar en acta.`,
       60: `Son atribuciones del Consejo de Administración: Cumplir con las disposiciones contempladas en la Ley General de Cooperativas y su Reglamento, así como cumplir y hacer que se cumplan estos estatutos, los reglamentos de régimen interno aprobados por la Asamblea General y demás disposiciones emanadas en este orden; Convocar a Asambleas Generales Ordinarias y Extraordinarias; Ejercer la representación legal de la cooperativa a través del Presidente, pudiendo esta persona delegarla en cualquiera de las personas integrantes del Consejo o en el Gerente previa autorización del mismo Consejo lo cual deberá constar en acta; Elaborar los proyectos de reglamentos de régimen interno que fueren necesarios para someterlos a la consideración y aprobación de la Asamblea General; Someter a la consideración y aprobación de la Asamblea General el informe sobre la situación económica y financiera de la cooperativa, previo dictamen de la Comisión de Vigilancia... Nombrar, amonestar y remover al Gerente... Resolver sobre la admisión, amonestación, suspensión y expulsión de los asociados; Administrar los recursos de la cooperativa... Celebrar los contratos de compraventa y prestamos cuyo monto no sea mayor del cincuenta por ciento (50%) del patrimonio de la cooperativa... (Ver texto íntegro en el panel al hacer clic).`,
@@ -453,7 +477,7 @@
       'node-entidad': {
         name: 'Cooperativa AtiTur (Estructura y Disolución)',
         subnodes: [
-          { id: 'sub-legal', title: 'PRINCIPIOS Y FINES', desc: 'Art. 1 - 8', color: '#475569', stroke: '#94a3b8', x: 850, y: 530, marker: 'url(#arrow)', articles: [1 , 2, 3, 4, 5, 6, 7, 8] },
+          { id: 'sub-legal', title: 'PRINCIPIOS Y FINES', desc: 'Art. 1 - 8', color: '#475569', stroke: '#94a3b8', x: 850, y: 530, marker: 'url(#arrow)', articles: [1, 2, 3, 4, 5, 6, 7, 8] },
           { id: 'sub-economicos', title: 'MEDIOS ECONÓMICOS', desc: 'Art. 9 - 15', color: '#0369a1', stroke: '#38bdf8', x: 50, y: 530, marker: 'url(#arrow-blue)', articles: [9, 10, 11, 12, 13, 14, 15] },
           { id: 'sub-contables', title: 'EJERCICIO CONTABLE', desc: 'Art. 70 - 76', color: '#15803d', stroke: '#4ade80', x: 850, y: 620, marker: 'url(#arrow-green)', articles: [70, 71, 72, 73, 74, 75, 76] },
           { id: 'sub-disolucion', title: 'DISOLUCIÓN Y FINALES', desc: 'Art. 77 - 92', color: '#be123c', stroke: '#fb7185', x: 50, y: 620, marker: 'url(#arrow-red)', articles: [77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92] }
@@ -539,6 +563,63 @@
       });
     }
 
+    // LÓGICA DEL BUSCADOR SUPERIOR DE TEXTO
+    function searchFullText(query) {
+      const dropdown = document.getElementById('searchResultsDropdown');
+      dropdown.innerHTML = '';
+      
+      if (query.trim().length < 3) {
+        dropdown.style.display = 'none';
+        return;
+      }
+      
+      const lowerQuery = query.toLowerCase();
+      let results = [];
+      
+      for (let i = 1; i <= 92; i++) {
+        const text = articlesDB[i] || "";
+        const lowerText = text.toLowerCase();
+        const index = lowerText.indexOf(lowerQuery);
+        
+        if (index !== -1) {
+          let snippet = "...";
+          const start = Math.max(0, index - 30);
+          const end = Math.min(text.length, index + lowerQuery.length + 50);
+          snippet += text.substring(start, end) + "...";
+          
+          const regex = new RegExp(`(${query})`, 'gi');
+          const highlightedSnippet = snippet.replace(regex, '<mark>$1</mark>');
+          
+          results.push({ num: i, snippet: highlightedSnippet });
+        }
+      }
+      
+      if (results.length > 0) {
+        results.forEach(res => {
+          const item = document.createElement('div');
+          item.className = 'search-result-item';
+          item.innerHTML = `<b>Art. ${res.num}º</b><br>${res.snippet}`;
+          item.onclick = () => {
+            selectArticle(res.num);
+            dropdown.style.display = 'none';
+            document.getElementById('topSearch').value = '';
+          };
+          dropdown.appendChild(item);
+        });
+        dropdown.style.display = 'block';
+      } else {
+        dropdown.innerHTML = '<div class="search-result-item">No se encontraron resultados en los 92 artículos.</div>';
+        dropdown.style.display = 'block';
+      }
+    }
+
+    document.addEventListener('click', function(e) {
+      const wrapper = document.querySelector('.top-search-wrapper');
+      if (!wrapper.contains(e.target)) {
+        document.getElementById('searchResultsDropdown').style.display = 'none';
+      }
+    });
+
     function toggleCategoryNode(nodeId) {
       if (currentlyExpandedNode === nodeId) {
         closeAll();
@@ -614,9 +695,9 @@
       const sub = breakdown.subnodes.find(s => s.id === subId);
       if (!sub || !sub.articles) return;
 
-      const isLeft = sub.x > 600; // Si está a la derecha, los chips van a la izquierda
+      const isLeft = sub.x > 600;
       const chipW = 50, chipH = 20, gap = 5;
-      const cols = Math.min(sub.articles.length, 4); // Máximo 4 columnas
+      const cols = Math.min(sub.articles.length, 4);
       
       const gridStartX = isLeft ? sub.x - (cols * (chipW + gap)) - 10 : sub.x + 210;
       const gridStartY = sub.y - 10;
@@ -653,16 +734,14 @@
         artG.appendChild(g);
       });
 
+      // Al desplegar una categoría, actualizamos el panel con el mensaje de instrucción
       document.getElementById('panelTitle').innerText = `${sub.title} (${sub.desc})`;
       document.getElementById('panelRelation').innerText = `${sub.articles.length} Artículos`;
       document.getElementById('panelText').innerText = `Haz clic en uno de los chips (Art. Xº) desplegados en el organigrama para leer su texto completo aquí.`;
     }
 
+    // FUNCIÓN CLAVE: Muestra el texto del artículo en el panel inferior
     function showArticleText(num) {
-      document.querySelectorAll('.article-item').forEach(el => el.classList.remove('active'));
-      const activeEl = document.getElementById(`art-item-${num}`);
-      if (activeEl) activeEl.classList.add('active');
-
       const text = articlesDB[num] || "Texto no encontrado.";
       document.getElementById('panelTitle').innerText = `Texto Completo: Artículo ${num}º`;
       document.getElementById('panelRelation').innerText = 'Vista Literal';
@@ -684,9 +763,8 @@
       document.getElementById('panelText').innerText = 'Haz clic en la lista lateral o en los nodos del organigrama para desplegar los artículos.';
     }
 
+    // LÓGICA CORREGIDA: Se asegura de mostrar el texto DESPUÉS de actualizar el organigrama
     function selectArticle(num) {
-      showArticleText(num); // Muestra el texto inmediatamente
-      
       let nodeId = null, subId = null;
       for(const nId in detailedData) {
         for(const sub of detailedData[nId].subnodes) {
@@ -701,10 +779,22 @@
         if(currentlyExpandedNode !== nodeId) {
             toggleCategoryNode(nodeId);
         }
-        // Pequeño retraso para asegurar que el DOM esté listo
+        // Usamos setTimeout para asegurar que el organigrama se renderice primero
+        // y LUEGO el panel inferior muestre el texto del artículo (evitando que se sobreescriba)
         setTimeout(() => {
             toggleArticles(nodeId, subId);
+            showArticleText(num); 
         }, 50);
+      } else {
+         showArticleText(num);
+      }
+
+      // Actualizar estilo de la barra lateral
+      document.querySelectorAll('.article-item').forEach(el => el.classList.remove('active'));
+      const activeEl = document.getElementById(`art-item-${num}`);
+      if (activeEl) {
+        activeEl.classList.add('active');
+        activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
     }
 
