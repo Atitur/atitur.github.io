@@ -757,11 +757,6 @@ Si tiene alguna consulta antes, durante o después de su viaje, con gusto podemo
         { id: "H11", d: " Hospedaje con familia - 2 tiempo de comida  Dieta vegana y vegetariana - WIFI  Actividade con la Familia por semana  / 7 Noches / 6 dias ", p: 1325, day: 0 },
 
 
-
-
-
-
-
         { id: "transp_lacustre_p_paja", d: "Transporte Lacustre público (Panajachel - San Juan)", p: 50, day: 0 },
         { id: "transp_terrestre_priv", d: "Transporte Terrestre Privado (Inter-pueblos)", p: 900, day: 0 },
         { id: "transp_lacustre_p_d3", d: "Transporte Lacustre Publica (Día 3)", p: 50, day: 0 },
@@ -782,6 +777,29 @@ Si tiene alguna consulta antes, durante o después de su viaje, con gusto podemo
         { id: "H1", d: "Hospedaje ", p: 150, day: 0 },
         { id: "rostro_may", d: "Rosto Maya ", p: 300, day: 0 },
 
+        { id: "Elem1", d: "Volcan paquisis", p: 0, day: 0 },
+        { id: "Elem2", d: "Transporte Pick up", p: 500, day: 0,  fixedCost: true },
+        { id: "Elem3", d: "Boxlunch", p:60,day: 0 },
+        { id: "Elem4", d: "Experiencia gastronomica", p: 100, day: 0 },
+        { id: "Elem5", d: "hospedaje", p: 300, day: 0 },
+        { id: "Elem6", d: "Transporte pick up", p: 500, day: 0 ,  fixedCost: true},
+        { id: "Elem7", d: " Volcan San pedro", p: 50, day: 0 },
+        { id: "Elem8", d: " Box lunch", p: 60, day: 0 },
+        { id: "Elem9", d: " Degustacion tipica Almuerzo", p: 75, day: 0 },
+        { id: "Elem10", d: "Temazcal", p: 175, day: 0 },
+        { id: "Elem11", d: "Hospedaje", p: 300, day: 0 },
+        { id: "Elem12", d: "Parapente", p: 700, day: 0 },
+        { id: "Elem13", d: "Degustación de típicos", p: 75, day: 0 },
+        { id: "Elem14", d: "ceremonia maya", p: 250, day: 0 },
+        { id: "Elem15", d: "hospedaje Maya", p: 200, day: 0 },
+        { id: "Elem16", d: "pesca artesanal", p: 125, day: 0 },
+        { id: "Elem17", d: "siembra de Tul", p: 125, day:  0},
+        { id: "Elem18", d: "Experiencia  gatronomica", p: 100, day: 0},
+        { id: "Elem19", d: "recorrio cultural", p: 50, day: 0 },
+        { id: "Elem20", d: "Hospedaje posada maya", p: 200, day: 0 },
+        { id: "Elem21", d: "Guia General", p: 300, day: 0 ,  fixedCost: true },
+        { id: "Elem22", d: "Guia General", p: 300, day: 0  ,  fixedCost: true},
+        { id: "Elem23", d: "Guia General", p: 300, day: 0 ,  fixedCost: true },
 
 
     ];
@@ -1346,7 +1364,47 @@ Se recomienda a los participantes respetar los horarios establecidos para garant
                 { desde: 6, hasta: Infinity,  valor: 0 }
             ]
         },
-    ];
+             {
+            nombre: "  Tour de 4 elementos",
+            icono: "🏛️",
+            descripcion: "Tour de 4 elemento [Agua, Fuego, Tierra y Aire]",
+            actividades: ["Elem1","Elem2","Elem3","Elem4","Elem5","Elem6","Elem7","Elem8","Elem9","Elem10","Elem11","Elem12","Elem13","Elem14","Elem15","Elem16","Elem17","Elem18","Elem19","Elem20","Elem21","Elem22","Elem23"],
+            dia: 1,
+            dias: {
+                Elem1: 1, Elem2: 1, Elem3: 1, Elem4: 1, Elem5: 1,
+                Elem6: 2, Elem7: 2, Elem8: 2, Elem9: 2, Elem10: 2, Elem11: 2, Elem21: 2,
+                Elem12: 3, Elem13: 3, Elem14: 3, Elem15: 3, Elem22: 3,
+                Elem16: 4, Elem17: 4, Elem18: 4, Elem19: 4, Elem20: 4, Elem23: 4
+            },
+  config: { 
+                observaciones: `El itinerario ha sido diseñado para brindar la mejor experiencia posible; sin embargo, podrá sufrir modificaciones debido a condiciones climáticas, situaciones de fuerza mayor, restricciones de acceso, condiciones de navegación, cierres temporales o cualquier otro acontecimiento ajeno al control de ATI TUR R.L.
+ATITUR R.L. promueve el turismo responsable, por lo que invitamos a nuestros visitantes a cuidar el medio ambiente, respetar las comunidades anfitrionas y seguir las indicaciones de los guías locales durante toda la experiencia.
+
+Si tiene alguna consulta antes, durante o después de su viaje, con gusto podemos ayudarle.
+                `,
+                recomendaciones: `Recomendaciones. 
+
+- Llevar agua, zapatos cómodos, protector solar, repelente, cámara fotográfica o teléfono con suficiente batería para capturar los mejores momento
+
+Se recomienda a los participantes respetar los horarios establecidos para garantizar el desarrollo adecuado de todas las actividades.`
+,
+                 almuerzoGuia: 0,
+                desayunoGuia: 0,
+                // Puedes definir porcentajes personalizados para este paquete si lo deseas:
+                porcentajes: {
+                    rack:    { fijo: 4, utilidad: 10, pos: 5, ota: 25 },
+                    sin_ota: { fijo: 0, utilidad: 5, pos: 5, ota: 0 },
+                    bruto:   { fijo: 0, utilidad: 0, pos: 0, ota: 0},
+                    neto:    { fijo: 0, utilidad: 0, pos: 0, ota: 0 }
+                }
+            },
+            reglasGuia: [
+                { desde: 1,  hasta: 3,        valor: 300 },
+                { desde: 4,  hasta: 5,        valor: 0},
+                { desde: 6, hasta: Infinity,  valor: 0 }
+            ]
+        },
+ ];
 
     /* ============================================================
        [LÓGICA] CLASIFICACIÓN DE ACTIVIDADES POR CATEGORÍA
@@ -1684,7 +1742,7 @@ Se recomienda a los participantes respetar los horarios establecidos para garant
         
         pkg.actividades.forEach(id => { 
             const act = activities.find(a => a.id === id);
-            if(act) act.day = pkg.dia; 
+            if(act) act.day = (pkg.dias && pkg.dias[id]) ? pkg.dias[id] : pkg.dia; 
         });
         if (!paquetesActivos.includes(paqueteTemporalIdx)) {
             paquetesActivos.push(paqueteTemporalIdx);
