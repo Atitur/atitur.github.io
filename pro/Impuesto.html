@@ -189,6 +189,8 @@
             <label class="checkbox-label"><input type="checkbox" id="chk_pos"> Cobro con POS</label>
             <label style="font-size:9px; color:var(--text-dim); display:block; margin:6px 0 3px;">% Comisión (sobre venta)</label>
             <input type="number" id="pos_pct" value="5" min="0" step="0.1">
+            <label style="font-size:9px; color:var(--text-dim); display:block; margin:6px 0 3px;">Afiliación POS (Q fijo / transacción)</label>
+            <input type="number" id="pos_fijo" value="2.95" min="0" step="0.01">
           </div>
         </div>
       </div>
@@ -260,7 +262,7 @@
 <script>
   const $ = id => document.getElementById(id);
   const fmt = n => 'Q ' + n.toLocaleString('es-GT', {minimumFractionDigits:2, maximumFractionDigits:2});
-  let posActive = false, posPct = 5;
+  let posActive = false, posPct = 5, posFijo = 2.95;
 
   function toggleNodeVisibility(key, active) {
     ['sin', 'con'].forEach(m => {
@@ -303,25 +305,27 @@
       return;
     }
     const posFee = ventaTotal * (posPct / 100);
-    const netoFinal = netoAntes - posFee;
+    const netoFinal = netoAntes - posFee - posFijo;
     renderNeto(containerId, 'Neto Final c/POS', netoFinal);
     $(containerId).innerHTML += `
       <div class="line" style="margin-top:6px; padding-top:6px; border-top:1px dashed var(--node-border);">
         <span class="k">${baseLabel} (antes de POS):</span><span class="v">${fmt(netoAntes)}</span>
       </div>
       <div class="line"><span class="k">Comisión POS (${posPct}%):</span><span class="v" style="color:#ff6b6b;">- ${fmt(posFee)}</span></div>
+      <div class="line"><span class="k">Afiliación POS:</span><span class="v" style="color:#ff6b6b;">- ${fmt(posFijo)}</span></div>
     `;
   }
 
   function renderPos(containerId, ventaTotal, netoPrevio) {
     if (!posActive) return;
     const posFee = ventaTotal * (posPct / 100);
-    const netoFinal = netoPrevio - posFee;
+    const netoFinal = netoPrevio - posFee - posFijo;
     $(containerId).innerHTML += `
       <div class="line" style="margin-top:6px; padding-top:6px; border-top:1px dashed var(--node-border);">
         <span class="k">Venta (monto POS):</span><span class="v">${fmt(ventaTotal)}</span>
       </div>
       <div class="line"><span class="k">Comisión POS (${posPct}%):</span><span class="v" style="color:#ff6b6b;">- ${fmt(posFee)}</span></div>
+      <div class="line"><span class="k">Afiliación POS:</span><span class="v" style="color:#ff6b6b;">- ${fmt(posFijo)}</span></div>
       <div class="line"><span class="k"><b>Neto Final c/POS:</b></span><span class="v"><b>${fmt(netoFinal)}</b></span></div>
     `;
   }
@@ -337,6 +341,7 @@
       <div class="line" style="margin-top:6px; padding-top:6px; border-top:1px dashed var(--node-border);">
         <span class="k">Comisión POS (${posPct}%, ya incluida arriba):</span><span class="v" style="color:#ff6b6b;">${fmt(posFee)}</span>
       </div>
+      <div class="line"><span class="k">Afiliación POS (ya incluida arriba):</span><span class="v" style="color:#ff6b6b;">${fmt(posFijo)}</span></div>
       <div class="line"><span class="k"><b>Neto Final (recibido):</b></span><span class="v"><b>${fmt(netoFinal)}</b></span></div>
     `;
   }
@@ -347,13 +352,14 @@
   // neto siga siendo el monto ingresado (no se resta del neto).
   function renderPosSin(containerId, totalSinPos, netoObjetivo) {
     if (!posActive) return;
-    const totalConPos = totalSinPos / (1 - posPct / 100);
-    const posFee = totalConPos - totalSinPos;
+    const totalConPos = (totalSinPos + posFijo) / (1 - posPct / 100);
+    const posFee = totalConPos * (posPct / 100);
     $(containerId).innerHTML += `
       <div class="line" style="margin-top:6px; padding-top:6px; border-top:1px dashed var(--node-border);">
         <span class="k">Total a Cobrar c/POS:</span><span class="v">${fmt(totalConPos)}</span>
       </div>
       <div class="line"><span class="k">Comisión POS (${posPct}%):</span><span class="v" style="color:#ff6b6b;">- ${fmt(posFee)}</span></div>
+      <div class="line"><span class="k">Afiliación POS:</span><span class="v" style="color:#ff6b6b;">- ${fmt(posFijo)}</span></div>
       <div class="line"><span class="k"><b>Neto Final c/POS:</b></span><span class="v"><b>${fmt(netoObjetivo)}</b></span></div>
     `;
   }
@@ -372,6 +378,7 @@
 
     posActive = $('chk_pos').checked;
     posPct = parseFloat($('pos_pct').value) || 0;
+    posFijo = parseFloat($('pos_fijo').value) || 0;
 
     // 1. PEQUEÑO CONTRIBUYENTE (5% Monotributo)
     if (activeMap.peq) {
@@ -400,7 +407,8 @@
       const isrRateOpc = 0.05;
       const taxFactorOpc = (0.12 + isrRateOpc) / 1.12;
       const posFactorOpc = posActive ? (posPct / 100) : 0;
-      const oSinTot = raw / (1 - taxFactorOpc - posFactorOpc);
+      const posFijoOpc = posActive ? posFijo : 0;
+      const oSinTot = (raw + posFijoOpc) / (1 - taxFactorOpc - posFactorOpc);
       const oSinBase = oSinTot / 1.12;
       const oSinIva = oSinBase * 0.12, oSinIsr = oSinBase * isrRateOpc;
 
@@ -521,6 +529,7 @@
     $(id).addEventListener('change', refresh);
   });
   $('pos_pct').addEventListener('input', refresh);
+  $('pos_fijo').addEventListener('input', refresh);
 
   window.addEventListener('resize', refresh);
   window.addEventListener('load', refresh);
