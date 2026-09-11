@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora Fiscal GT — Flujo Continuo Desglosado</title>
+<style>
+  :root {
+    --bg: #111318;
+    --bg-dots: #1a1d24;
+    --node-bg: #181b22;
+    --node-border: #2c313c;
+    --text: #d8dae0;
+    --text-dim: #8b8f9a;
+    --wire-default: #4a505e;
+    
+    --amt: #e8a33d;
+    --peq: #5cb87a;
+    --opc: #c77dff;
+    --uti: #e8636f;
+    --esp: #4d9de0;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background:
+      radial-gradient(var(--bg-dots) 1px, transparent 1px) 0 0/22px 22px,
+      var(--bg);
+    color: var(--text);
+    font-family: 'SF Mono', 'JetBrains Mono', 'Consolas', monospace;
+    min-height: 100vh;
+  }
+  .canvas {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 24px 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  h1 { font-size: 22px; font-weight: 600; margin: 0 0 6px; color: #f2f3f5; }
+  .sub { color: var(--text-dim); font-size: 13px; margin-bottom: 18px; }
+
+  .graph { position: relative; flex: 1; display: flex; flex-direction: column; }
+  svg.wires {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; overflow: visible; z-index: 1;
+  }
+  
+  @keyframes flow {
+    from { stroke-dashoffset: 20; }
+    to { stroke-dashoffset: 0; }
+  }
+
+  svg.wires path {
+    fill: none;
+    stroke-width: 2;
+    stroke-dasharray: 6, 4;
+    animation: flow 1s linear infinite;
+    transition: opacity 0.3s ease;
+  }
+
+  /* Grid de 6 columnas */
+  .flow-container {
+    display: grid;
+    grid-template-columns: 160px 170px 1fr 1fr 1.2fr 1.1fr;
+    gap: 14px;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+    flex: 1;
+  }
+
+  .col { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px; 
+    justify-content: center; 
+    height: 100%;
+    transition: all 0.3s ease;
+  }
+
+  .node {
+    background: var(--node-bg);
+    border: 1px solid var(--node-border);
+    border-radius: 8px;
+    width: 100%;
+    box-shadow: 0 4px 14px rgba(0,0,0,.4);
+    position: relative;
+    transition: transform 0.25s ease, border-color 0.25s ease, opacity 0.25s ease;
+  }
+  .node:hover {
+    transform: translateY(-2px);
+    border-color: #4a505e;
+  }
+
+  .node.hidden { display: none !important; }
+
+  .node-head {
+    padding: 6px 8px; font-size: 9px; font-weight: 700;
+    letter-spacing: .02em; border-bottom: 1px solid var(--node-border);
+    border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: space-between;
+  }
+  .node-body { padding: 8px; font-size: 10px; }
+
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%; position: absolute;
+    top: 50%; transform: translateY(-50%); border: 2px solid var(--bg); background: var(--wire-default);
+  }
+  .dot.out { right: -5px; }
+  .dot.in { left: -5px; }
+
+  .node.input .node-head { background: rgba(232,163,61,.12); color: var(--amt); }
+  .node.select .node-head { background: rgba(139,143,154,.15); color: #b7bac2; }
+  .node.peq .node-head { background: rgba(92,184,122,.14); color: var(--peq); }
+  .node.opc .node-head { background: rgba(199,125,255,.14); color: var(--opc); }
+  .node.uti .node-head { background: rgba(232,99,111,.14); color: var(--uti); }
+  .node.esp .node-head { background: rgba(77,157,224,.14); color: var(--esp); }
+
+  /* Mapeo de colores para el monto del último nodo */
+  .node.peq .neto-val { color: var(--peq); }
+  .node.opc .neto-val { color: var(--opc); }
+  .node.uti .neto-val { color: var(--uti); }
+  .node.esp .neto-val { color: var(--esp); }
+
+  .checkbox-label {
+    display: flex; align-items: center; gap: 8px; font-size: 11px; margin-bottom: 6px;
+    cursor: pointer; user-select: none;
+  }
+  .checkbox-label:last-child { margin-bottom: 0; }
+  .checkbox-label input { cursor: pointer; accent-color: var(--amt); }
+
+  .line { display: flex; justify-content: space-between; padding: 2px 0; font-size: 9.5px; }
+  .line .k { color: var(--text-dim); }
+  .line .v { font-variant-numeric: tabular-nums; }
+  .line .v.iva { color: #4d9de0; }
+  .line .v.isr { color: #e8a33d; }
+
+  /* Ajuste de jerarquía para el Nodo Final */
+  .neto-title { font-size: 9px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 4px; font-weight: 600; }
+  .neto-val { font-size: 22px; font-weight: 900; font-variant-numeric: tabular-nums; line-height: 1.1; }
+
+  input[type=number] {
+    width: 100%; background: #111317; border: 1px solid var(--node-border);
+    border-radius: 4px; padding: 6px; color: #fff; font-family: inherit; font-size: 15px; font-weight: 700;
+  }
+</style>
+</head>
+<body>
+
+<div class="canvas">
+  <h1>Calculadora Fiscal GT — Flujo Unidireccional Completo</h1>
+  <div class="sub">Trazabilidad individual con desglose explícito de IVA/ISR y nodo neto final independiente.</div>
+
+  <div class="graph" id="graphContainer">
+    <svg class="wires" id="wires"></svg>
+
+    <div class="flow-container">
+      
+      <!-- COLUMNA 1: ENTRADA -->
+      <div class="col">
+        <div class="node input" id="nodeInput">
+          <div class="node-head">1. BASE INICIAL</div>
+          <div class="node-body">
+            <label style="font-size: 9px; color: var(--text-dim); display:block; margin-bottom:4px;">Monto Ingresado (Q)</label>
+            <input type="number" id="monto" value="500" min="0">
+          </div>
+          <div class="dot out" id="d_in"></div>
+        </div>
+      </div>
+
+      <!-- COLUMNA 2: REGÍMENES (SOLO PEQUEÑO ACTIVO AL INICIAR) -->
+      <div class="col">
+        <div class="node select" id="nodeSelect">
+          <div class="dot in" id="d_sel_in"></div>
+          <div class="node-head">2. REGÍMENES</div>
+          <div class="node-body">
+            <label class="checkbox-label"><input type="checkbox" id="chk_peq" checked> Pequeño Contribuyente</label>
+            <label class="checkbox-label"><input type="checkbox" id="chk_opc"> Opcional Simplificado</label>
+            <label class="checkbox-label"><input type="checkbox" id="chk_uti"> Sobre las Utilidades</label>
+            <label class="checkbox-label"><input type="checkbox" id="chk_esp"> Factura Especial</label>
+          </div>
+          <div class="dot out" id="d_sel_out"></div>
+        </div>
+      </div>
+
+      <!-- COLUMNA 3: FACTORES -->
+      <div class="col">
+        <div class="node peq" id="node_fact_peq_sin"><div class="dot in" id="d_f1s_in"></div><div class="node-head">FACTOR: PEQUEÑO (SIN)</div><div class="node-body" id="f_peq_sin"></div><div class="dot out" id="d_f1s_out"></div></div>
+        <div class="node peq" id="node_fact_peq_con"><div class="dot in" id="d_f1c_in"></div><div class="node-head">FACTOR: PEQUEÑO (CON)</div><div class="node-body" id="f_peq_con"></div><div class="dot out" id="d_f1c_out"></div></div>
+
+        <div class="node opc" id="node_fact_opc_sin"><div class="dot in" id="d_f2s_in"></div><div class="node-head">FACTOR: OPCIONAL (SIN)</div><div class="node-body" id="f_opc_sin"></div><div class="dot out" id="d_f2s_out"></div></div>
+        <div class="node opc" id="node_fact_opc_con"><div class="dot in" id="d_f2c_in"></div><div class="node-head">FACTOR: OPCIONAL (CON)</div><div class="node-body" id="f_opc_con"></div><div class="dot out" id="d_f2c_out"></div></div>
+
+        <div class="node uti" id="node_fact_uti_sin"><div class="dot in" id="d_f3s_in"></div><div class="node-head">FACTOR: UTILIDADES (SIN)</div><div class="node-body" id="f_uti_sin"></div><div class="dot out" id="d_f3s_out"></div></div>
+        <div class="node uti" id="node_fact_uti_con"><div class="dot in" id="d_f3c_in"></div><div class="node-head">FACTOR: UTILIDADES (CON)</div><div class="node-body" id="f_uti_con"></div><div class="dot out" id="d_f3c_out"></div></div>
+
+        <div class="node esp" id="node_fact_esp_sin"><div class="dot in" id="d_f4s_in"></div><div class="node-head">FACTOR: ESPECIAL (ENTREGAR)</div><div class="node-body" id="f_esp_sin"></div><div class="dot out" id="d_f4s_out"></div></div>
+        <div class="node esp" id="node_fact_esp_con"><div class="dot in" id="d_f4c_in"></div><div class="node-head">FACTOR: ESPECIAL (TOTAL FACT)</div><div class="node-body" id="f_esp_con"></div><div class="dot out" id="d_f4c_out"></div></div>
+      </div>
+
+      <!-- COLUMNA 4: CÁLCULOS MATEMÁTICOS -->
+      <div class="col">
+        <div class="node peq" id="node_op_peq_sin"><div class="dot in" id="d_op1s_in"></div><div class="node-head">CÁLCULO: PEQUEÑO (SIN)</div><div class="node-body" id="op_peq_sin"></div><div class="dot out" id="d_op1s_out"></div></div>
+        <div class="node peq" id="node_op_peq_con"><div class="dot in" id="d_op1c_in"></div><div class="node-head">CÁLCULO: PEQUEÑO (CON)</div><div class="node-body" id="op_peq_con"></div><div class="dot out" id="d_op1c_out"></div></div>
+
+        <div class="node opc" id="node_op_opc_sin"><div class="dot in" id="d_op2s_in"></div><div class="node-head">CÁLCULO: OPCIONAL (SIN)</div><div class="node-body" id="op_opc_sin"></div><div class="dot out" id="d_op2s_out"></div></div>
+        <div class="node opc" id="node_op_opc_con"><div class="dot in" id="d_op2c_in"></div><div class="node-head">CÁLCULO: OPCIONAL (CON)</div><div class="node-body" id="op_opc_con"></div><div class="dot out" id="d_op2c_out"></div></div>
+
+        <div class="node uti" id="node_op_uti_sin"><div class="dot in" id="d_op3s_in"></div><div class="node-head">CÁLCULO: UTILIDADES (SIN)</div><div class="node-body" id="op_uti_sin"></div><div class="dot out" id="d_op3s_out"></div></div>
+        <div class="node uti" id="node_op_uti_con"><div class="dot in" id="d_op3c_in"></div><div class="node-head">CÁLCULO: UTILIDADES (CON)</div><div class="node-body" id="op_uti_con"></div><div class="dot out" id="d_op3c_out"></div></div>
+
+        <div class="node esp" id="node_op_esp_sin"><div class="dot in" id="d_op4s_in"></div><div class="node-head">CÁLCULO: ESPECIAL (ENTREGAR)</div><div class="node-body" id="op_esp_sin"></div><div class="dot out" id="d_op4s_out"></div></div>
+        <div class="node esp" id="node_op_esp_con"><div class="dot in" id="d_op4c_in"></div><div class="node-head">CÁLCULO: ESPECIAL (TOTAL FACT)</div><div class="node-body" id="op_esp_con"></div><div class="dot out" id="d_op4c_out"></div></div>
+      </div>
+
+      <!-- COLUMNA 5: DESGLOSE DE BASES E IMPUESTOS (IVA vs ISR) -->
+      <div class="col">
+        <div class="node peq" id="node_des_peq_sin"><div class="dot in" id="d_d1s_in"></div><div class="node-head">DESGLOSE: PEQUEÑO (SIN)</div><div class="node-body" id="d1s_body"></div><div class="dot out" id="d_d1s_out"></div></div>
+        <div class="node peq" id="node_des_peq_con"><div class="dot in" id="d_d1c_in"></div><div class="node-head">DESGLOSE: PEQUEÑO (CON)</div><div class="node-body" id="d1c_body"></div><div class="dot out" id="d_d1c_out"></div></div>
+
+        <div class="node opc" id="node_des_opc_sin"><div class="dot in" id="d_d2s_in"></div><div class="node-head">DESGLOSE: OPCIONAL (SIN)</div><div class="node-body" id="d2s_body"></div><div class="dot out" id="d_d2s_out"></div></div>
+        <div class="node opc" id="node_des_opc_con"><div class="dot in" id="d_d2c_in"></div><div class="node-head">DESGLOSE: OPCIONAL (CON)</div><div class="node-body" id="d2c_body"></div><div class="dot out" id="d_d2c_out"></div></div>
+
+        <div class="node uti" id="node_des_uti_sin"><div class="dot in" id="d_d3s_in"></div><div class="node-head">DESGLOSE: UTILIDADES (SIN)</div><div class="node-body" id="d3s_body"></div><div class="dot out" id="d_d3s_out"></div></div>
+        <div class="node uti" id="node_des_uti_con"><div class="dot in" id="d_d3c_in"></div><div class="node-head">DESGLOSE: UTILIDADES (CON)</div><div class="node-body" id="d3c_body"></div><div class="dot out" id="d_d3c_out"></div></div>
+
+        <div class="node esp" id="node_des_esp_sin"><div class="dot in" id="d_d4s_in"></div><div class="node-head">DESGLOSE: ESPECIAL (ENTREGAR)</div><div class="node-body" id="d4s_body"></div><div class="dot out" id="d_d4s_out"></div></div>
+        <div class="node esp" id="node_des_esp_con"><div class="dot in" id="d_d4c_in"></div><div class="node-head">DESGLOSE: ESPECIAL (TOTAL FACT)</div><div class="node-body" id="d4c_body"></div><div class="dot out" id="d_d4c_out"></div></div>
+      </div>
+
+      <!-- COLUMNA 6: MONTO NETO SEPARADO INDIVIDUAL -->
+      <div class="col">
+        <div class="node peq" id="node_net_peq_sin"><div class="dot in" id="d_n1s_in"></div><div class="node-head">NETO: PEQUEÑO (SIN)</div><div class="node-body" id="n1s_body"></div></div>
+        <div class="node peq" id="node_net_peq_con"><div class="dot in" id="d_n1c_in"></div><div class="node-head">NETO: PEQUEÑO (CON)</div><div class="node-body" id="n1c_body"></div></div>
+
+        <div class="node opc" id="node_net_opc_sin"><div class="dot in" id="d_n2s_in"></div><div class="node-head">NETO: OPCIONAL (SIN)</div><div class="node-body" id="n2s_body"></div></div>
+        <div class="node opc" id="node_net_opc_con"><div class="dot in" id="d_n2c_in"></div><div class="node-head">NETO: OPCIONAL (CON)</div><div class="node-body" id="n2c_body"></div></div>
+
+        <div class="node uti" id="node_net_uti_sin"><div class="dot in" id="d_n3s_in"></div><div class="node-head">NETO: UTILIDADES (SIN)</div><div class="node-body" id="n3s_body"></div></div>
+        <div class="node uti" id="node_net_uti_con"><div class="dot in" id="d_n3c_in"></div><div class="node-head">NETO: UTILIDADES (CON)</div><div class="node-body" id="n3c_body"></div></div>
+
+        <div class="node esp" id="node_net_esp_sin"><div class="dot in" id="d_n4s_in"></div><div class="node-head">NETO: ESPECIAL (ENTREGAR)</div><div class="node-body" id="n4s_body"></div></div>
+        <div class="node esp" id="node_net_esp_con"><div class="dot in" id="d_n4c_in"></div><div class="node-head">NETO: ESPECIAL (TOTAL FACT)</div><div class="node-body" id="n4c_body"></div></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const fmt = n => 'Q ' + n.toLocaleString('es-GT', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+  function toggleNodeVisibility(key, active) {
+    ['sin', 'con'].forEach(m => {
+      [$(`node_fact_${key}_${m}`), $(`node_op_${key}_${m}`), $(`node_des_${key}_${m}`), $(`node_net_${key}_${m}`)].forEach(el => {
+        if (el) {
+          if (active) el.classList.remove('hidden');
+          else el.classList.add('hidden');
+        }
+      });
+    });
+  }
+
+  function renderDesglose(containerId, baseLabel, baseVal, ivaVal, isrVal) {
+    $(containerId).innerHTML = `
+      <div class="line"><span class="k">${baseLabel}:</span><span class="v">${fmt(baseVal)}</span></div>
+      <div class="line"><span class="k">IVA Desglosado:</span><span class="v iva">${fmt(ivaVal)}</span></div>
+      <div class="line"><span class="k">ISR / Retención:</span><span class="v isr">${fmt(isrVal)}</span></div>
+    `;
+  }
+
+  function renderNeto(containerId, labelText, netVal) {
+    $(containerId).innerHTML = `
+      <div class="neto-title">${labelText}</div>
+      <div class="neto-val">${fmt(netVal)}</div>
+    `;
+  }
+
+  function calc(){
+    const raw = parseFloat($('monto').value) || 0;
+
+    const activeMap = {
+      peq: $('chk_peq').checked,
+      opc: $('chk_opc').checked,
+      uti: $('chk_uti').checked,
+      esp: $('chk_esp').checked
+    };
+
+    Object.keys(activeMap).forEach(key => toggleNodeVisibility(key, activeMap[key]));
+
+    // 1. PEQUEÑO CONTRIBUYENTE (5% Monotributo)
+    if (activeMap.peq) {
+      $('f_peq_sin').innerHTML = `<b>Divisor: 0.95</b><br><span style="color:var(--text-dim); font-size:8px;">1.00 - 0.05 Tasa.</span>`;
+      $('f_peq_con').innerHTML = `<b>Tasa: 5% Directa</b><br><span style="color:var(--text-dim); font-size:8px;">Sobre factura total.</span>`;
+
+      const pSinTot = raw / 0.95, pSinImp = pSinTot - raw;
+      const pConImp = raw * 0.05, pConNet = raw - pConImp;
+
+      $('op_peq_sin').innerHTML = `Q${raw.toFixed(2)} / 0.95`;
+      renderDesglose('d1s_body', 'Base Requerida', raw, 0, pSinImp);
+      renderNeto('n1s_body', 'Monto a Facturar', pSinTot);
+
+      $('op_peq_con').innerHTML = `Q${raw.toFixed(2)} × 5%`;
+      renderDesglose('d1c_body', 'Base Emitida', raw, 0, pConImp);
+      renderNeto('n1c_body', 'Efectivo a Recibir', pConNet);
+    }
+
+    // 2. OPCIONAL SIMPLIFICADO (12% IVA + 5% ISR)
+    if (activeMap.opc) {
+      $('f_opc_sin').innerHTML = `<b>Multiplicador: +17%</b><br><span style="color:var(--text-dim); font-size:8px;">12% IVA + 5% ISR.</span>`;
+      $('f_opc_con').innerHTML = `<b>Divisor: 1.17</b><br><span style="color:var(--text-dim); font-size:8px;">Desglose imponible.</span>`;
+
+      const oSinIva = raw * 0.12, oSinIsr = raw * 0.05, oSinTot = raw + oSinIva + oSinIsr;
+      const oConBas = raw / 1.17, oConIva = oConBas * 0.12, oConIsr = oConBas * 0.05;
+
+      $('op_opc_sin').innerHTML = `Q${raw.toFixed(2)} + 17%`;
+      renderDesglose('d2s_body', 'Base Net de Impuestos', raw, oSinIva, oSinIsr);
+      renderNeto('n2s_body', 'Total a Cobrar', oSinTot);
+
+      $('op_opc_con').innerHTML = `Q${raw.toFixed(2)} / 1.17`;
+      renderDesglose('d2c_body', 'Base Gravable Extraída', oConBas, oConIva, oConIsr);
+      renderNeto('n2c_body', 'Monto Neto Líquido', oConBas);
+    }
+
+    // 3. SOBRE UTILIDADES (12% IVA + 25% ISR Trimestral)
+    if (activeMap.uti) {
+      $('f_uti_sin').innerHTML = `<b>Multiplicador: +37%</b><br><span style="color:var(--text-dim); font-size:8px;">12% IVA + 25% ISR.</span>`;
+      $('f_uti_con').innerHTML = `<b>Divisor: 1.37</b><br><span style="color:var(--text-dim); font-size:8px;">Desglose imponible.</span>`;
+
+      const uSinIva = raw * 0.12, uSinIsr = raw * 0.25, uSinTot = raw + uSinIva + uSinIsr;
+      const uConBas = raw / 1.37, uConIva = uConBas * 0.12, uConIsr = uConBas * 0.25;
+
+      $('op_uti_sin').innerHTML = `Q${raw.toFixed(2)} + 37%`;
+      renderDesglose('d3s_body', 'Base Net de Impuestos', raw, uSinIva, uSinIsr);
+      renderNeto('n3s_body', 'Total a Cobrar', uSinTot);
+
+      $('op_uti_con').innerHTML = `Q${raw.toFixed(2)} / 1.37`;
+      renderDesglose('d3c_body', 'Base Gravable Extraída', uConBas, uConIva, uConIsr);
+      renderNeto('n3c_body', 'Monto Neto Líquido', uConBas);
+    }
+
+    // 4. FACTURA ESPECIAL (Retención 12% IVA + 5% ISR)
+    if (activeMap.esp) {
+      $('f_esp_sin').innerHTML = `<b>Divisor Base: 0.95</b><br><span style="color:var(--text-dim); font-size:8px;">Obtiene Base sin ISR.</span>`;
+      $('f_esp_con').innerHTML = `<b>Divisor IVA: 1.12</b><br><span style="color:var(--text-dim); font-size:8px;">Extrae Base Imponible.</span>`;
+
+      const e1Base = raw / 0.95, e1Isr = e1Base * 0.05, e1Iva = e1Base * 0.12, e1Total = e1Base + e1Iva;
+      const e2Base = raw / 1.12, e2Iva = raw - e2Base, e2Isr = e2Base * 0.05, e2Entregar = raw - e2Iva - e2Isr;
+
+      $('op_esp_sin').innerHTML = `Q${raw.toFixed(2)} / 0.95`;
+      renderDesglose('d4s_body', 'Base Imponible Real', e1Base, e1Iva, e1Isr);
+      renderNeto('n4s_body', 'Total Factura a Emitir', e1Total);
+
+      $('op_esp_con').innerHTML = `Q${raw.toFixed(2)} / 1.12`;
+      renderDesglose('d4c_body', 'Base Imponible Extraída', e2Base, e2Iva, e2Isr);
+      renderNeto('n4c_body', 'Efectivo a Proveedor', e2Entregar);
+    }
+  }
+
+  function drawWires(){
+    const svg = $('wires');
+    const graphEl = $('graphContainer');
+    const canvas = graphEl.getBoundingClientRect();
+    svg.innerHTML = '';
+
+    function pt(dotId) {
+      const el = $(dotId);
+      if(!el) return {x:0, y:0};
+      const r = el.getBoundingClientRect();
+      return { x: r.left - canvas.left + r.width/2, y: r.top - canvas.top + r.height/2 };
+    }
+
+    function wire(a, b, color = 'var(--wire-default)'){
+      const dx = Math.max(15, (b.x - a.x) * 0.45);
+      const d = `M ${a.x} ${a.y} C ${a.x + dx} ${a.y}, ${b.x - dx} ${b.y}, ${b.x} ${b.y}`;
+      const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d', d);
+      path.setAttribute('stroke', color);
+      svg.appendChild(path);
+    }
+
+    const activeMap = {
+      peq: { act: $('chk_peq').checked, col: 'var(--peq)' },
+      opc: { act: $('chk_opc').checked, col: 'var(--opc)' },
+      uti: { act: $('chk_uti').checked, col: 'var(--uti)' },
+      esp: { act: $('chk_esp').checked, col: 'var(--esp)' }
+    };
+
+    wire(pt('d_in'), pt('d_sel_in'), 'var(--amt)');
+
+    const items = [
+      { key: 'peq', m: 'sin', fIn: 'd_f1s_in', fOut: 'd_f1s_out', opIn: 'd_op1s_in', opOut: 'd_op1s_out', dIn: 'd_d1s_in', dOut: 'd_d1s_out', nIn: 'd_n1s_in' },
+      { key: 'peq', m: 'con', fIn: 'd_f1c_in', fOut: 'd_f1c_out', opIn: 'd_op1c_in', opOut: 'd_op1c_out', dIn: 'd_d1c_in', dOut: 'd_d1c_out', nIn: 'd_n1c_in' },
+
+      { key: 'opc', m: 'sin', fIn: 'd_f2s_in', fOut: 'd_f2s_out', opIn: 'd_op2s_in', opOut: 'd_op2s_out', dIn: 'd_d2s_in', dOut: 'd_d2s_out', nIn: 'd_n2s_in' },
+      { key: 'opc', m: 'con', fIn: 'd_f2c_in', fOut: 'd_f2c_out', opIn: 'd_op2c_in', opOut: 'd_op2c_out', dIn: 'd_d2c_in', dOut: 'd_d2c_out', nIn: 'd_n2c_in' },
+
+      { key: 'uti', m: 'sin', fIn: 'd_f3s_in', fOut: 'd_f3s_out', opIn: 'd_op3s_in', opOut: 'd_op3s_out', dIn: 'd_d3s_in', dOut: 'd_d3s_out', nIn: 'd_n3s_in' },
+      { key: 'uti', m: 'con', fIn: 'd_f3c_in', fOut: 'd_f3c_out', opIn: 'd_op3c_in', opOut: 'd_op3c_out', dIn: 'd_d3c_in', dOut: 'd_d3c_out', nIn: 'd_n3c_in' },
+
+      { key: 'esp', m: 'sin', fIn: 'd_f4s_in', fOut: 'd_f4s_out', opIn: 'd_op4s_in', opOut: 'd_op4s_out', dIn: 'd_d4s_in', dOut: 'd_d4s_out', nIn: 'd_n4s_in' },
+      { key: 'esp', m: 'con', fIn: 'd_f4c_in', fOut: 'd_f4c_out', opIn: 'd_op4c_in', opOut: 'd_op4c_out', dIn: 'd_d4c_in', dOut: 'd_d4c_out', nIn: 'd_n4c_in' }
+    ];
+
+    items.forEach(it => {
+      const conf = activeMap[it.key];
+      if (conf.act) {
+        wire(pt('d_sel_out'), pt(it.fIn), conf.col);
+        wire(pt(it.fOut), pt(it.opIn), conf.col);
+        wire(pt(it.opOut), pt(it.dIn), conf.col);
+        wire(pt(it.dOut), pt(it.nIn), conf.col);
+      }
+    });
+  }
+
+  function refresh(){ 
+    calc(); 
+    setTimeout(() => requestAnimationFrame(drawWires), 20);
+  }
+
+  $('monto').addEventListener('input', refresh);
+  ['chk_peq', 'chk_opc', 'chk_uti', 'chk_esp'].forEach(id => {
+    $(id).addEventListener('change', refresh);
+  });
+
+  window.addEventListener('resize', refresh);
+  window.addEventListener('load', refresh);
+</script>
+</body>
+</html>
