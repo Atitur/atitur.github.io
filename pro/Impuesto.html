@@ -293,6 +293,26 @@
   // netoPrevio = el neto que ya se había calculado para ese nodo (antes de POS).
   // Caso "CON impuesto incluido": el monto ya es lo que se cobra vía POS.
   // La comisión POS se resta directamente del neto ya calculado.
+  // Muestra el neto de un régimen, adaptando el título principal según si el POS
+  // está activo. Si está activo, el título grande pasa a ser "Neto Final c/POS"
+  // (el dinero real que queda), y el monto antes de POS se muestra abajo como
+  // referencia — para no confundir con un número que en realidad no es el final.
+  function renderNetoConPos(containerId, baseLabel, netoAntes, ventaTotal) {
+    if (!posActive) {
+      renderNeto(containerId, baseLabel, netoAntes);
+      return;
+    }
+    const posFee = ventaTotal * (posPct / 100);
+    const netoFinal = netoAntes - posFee;
+    renderNeto(containerId, 'Neto Final c/POS', netoFinal);
+    $(containerId).innerHTML += `
+      <div class="line" style="margin-top:6px; padding-top:6px; border-top:1px dashed var(--node-border);">
+        <span class="k">${baseLabel} (antes de POS):</span><span class="v">${fmt(netoAntes)}</span>
+      </div>
+      <div class="line"><span class="k">Comisión POS (${posPct}%):</span><span class="v" style="color:#ff6b6b;">- ${fmt(posFee)}</span></div>
+    `;
+  }
+
   function renderPos(containerId, ventaTotal, netoPrevio) {
     if (!posActive) return;
     const posFee = ventaTotal * (posPct / 100);
@@ -393,8 +413,7 @@
 
       $('op_opc_con').innerHTML = `Q${raw.toFixed(2)} / 1.12`;
       renderDesglose('d2c_body', 'Base Gravable Extraída', oConBas, oConIva, oConIsr);
-      renderNeto('n2c_body', 'Monto Neto Líquido', oConBas - oConIsr);
-      renderPos('n2c_body', raw, oConBas - oConIsr);
+      renderNetoConPos('n2c_body', 'Monto Neto Líquido', oConBas - oConIsr, raw);
     }
 
     // 3. SOBRE UTILIDADES (12% IVA + 25% ISR, ambos sobre la misma base)
